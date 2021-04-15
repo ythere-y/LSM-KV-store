@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <cstring>
-
 class BitMap{
 private:
     char *bitmap;
@@ -44,9 +43,10 @@ public:
     /*
      * 将index位设为1
      */
-    int bitmapSet(int index){
-        int addr = index/8; // 确定需要取出哪个字节块
-        int addroffset = index % 8;
+    int bitmapSet(unsigned int index){
+        index = index % (size*8);
+        unsigned int addr = index/8; // 确定需要取出哪个字节块
+        unsigned int addroffset = index % 8;
         unsigned char temp = 0x1 << addroffset;
         bitmap[addr] |= temp;
         return 1;
@@ -55,9 +55,10 @@ public:
     /*
      * 查询index位是否为1
      */
-    bool bitmapGet(int index){
-        int addr = index/8;
-        int addroffset = index % 8;
+    bool bitmapGet(unsigned int index){
+        index = index % (size * 8);
+        unsigned int addr = index/8;
+        unsigned int addroffset = index % 8;
         unsigned char temp = 0x1 << addroffset;
         return (bitmap[addr] & temp);
     }

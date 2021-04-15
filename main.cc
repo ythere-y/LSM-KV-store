@@ -1,9 +1,14 @@
 #include <iostream>
 #include <cstdint>
 #include <string>
-#include "MurmurHash3.h"
 
 #include "test.h"
+
+
+#include "skip_list.h"
+#include "bloomfilter.h"
+
+const bool global_test = true;
 
 class CorrectnessTest : public Test {
 private:
@@ -71,28 +76,35 @@ public:
 
 int main(int argc, char *argv[])
 {
-	bool verbose = (argc == 2 && std::string(argv[1]) == "-v");
 
+    if (global_test){
+        std::cout<< "the hash res: " << std::endl;
+        BloomFilter *bf_test = new BloomFilter(10240);
+        Skip_List *sl_test = new Skip_List();
+        for (long long i = 0; i < 6; i ++){
+            bf_test->Add(i);
+            sl_test->insertNode(i);
+            sl_test->printList();
 
-    unsigned int get[4] = {0};
-    long long input = 123;
-    MurmurHash3_x64_128(&input,sizeof (input),1,get);
-    std::cout<< "the hash res: " << std::endl;
-    for (int i = 0 ;i < 4;i++){
-        std::cout<< get[i] << ',';
+        }
+        if (bf_test->Contains(2))
+            std::cout << "find 2 in fliter OK~!\n";
+        sl_test->printList();
+        sl_test->deleteNode(3);
+        sl_test->printList();
     }
+    else{
+        bool verbose = (argc == 2 && std::string(argv[1]) == "-v");
+        std::cout << std::endl;
+        std::cout << "Usage: " << argv[0] << " [-v]" << std::endl;
+        std::cout << "  -v: print extra info for failed tests [currently ";
+        std::cout << (verbose ? "ON" : "OFF")<< "]" << std::endl;
+        std::cout << std::endl;
+        std::cout.flush();
 
+        CorrectnessTest test("./data", verbose);
 
-    std::cout << std::endl;
-	std::cout << "Usage: " << argv[0] << " [-v]" << std::endl;
-	std::cout << "  -v: print extra info for failed tests [currently ";
-	std::cout << (verbose ? "ON" : "OFF")<< "]" << std::endl;
-	std::cout << std::endl;
-	std::cout.flush();
-
-	CorrectnessTest test("./data", verbose);
-
-	test.start_test();
-
+        test.start_test();
+    }
 	return 0;
 }
