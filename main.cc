@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdint>
 #include <string>
+#include "MurmurHash3.h"
 
 #include "test.h"
 
@@ -72,6 +73,17 @@ int main(int argc, char *argv[])
 {
 	bool verbose = (argc == 2 && std::string(argv[1]) == "-v");
 
+
+    unsigned int get[4] = {0};
+    long long input = 123;
+    MurmurHash3_x64_128(&input,sizeof (input),1,get);
+    std::cout<< "the hash res: " << std::endl;
+    for (int i = 0 ;i < 4;i++){
+        std::cout<< get[i] << ',';
+    }
+
+
+    std::cout << std::endl;
 	std::cout << "Usage: " << argv[0] << " [-v]" << std::endl;
 	std::cout << "  -v: print extra info for failed tests [currently ";
 	std::cout << (verbose ? "ON" : "OFF")<< "]" << std::endl;
