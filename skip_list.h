@@ -3,15 +3,21 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <string>
 struct SKNode{
-    long long key;
+    uint64_t key;
+    const std::string * offset;
     std::vector<SKNode*> forward;
     SKNode(){
         key = 0;
     }
-    SKNode(const long long &tar){
+    SKNode(const uint64_t &tar){
         key = tar;
     };
+    SKNode(const uint64_t &tar, const std::string &s){
+        key = tar;
+        offset = &s;
+    }
 };
 
 class Skip_List
@@ -24,7 +30,7 @@ public:
     Skip_List();
     ~Skip_List();
     SKNode*searchNode(const long long &key);
-    int insertNode(const long long &key);
+    int insertNode(const long long &key,const std::string &s);
     int deleteNode(const long long &key);
     void printList();
 };

@@ -22,6 +22,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     BitMap.h \
     MurmurHash3.h \
+    arena.h \
     bloomfilter.h \
     kvstore.h \
     kvstore_api.h \

@@ -81,9 +81,12 @@ int main(int argc, char *argv[])
         std::cout<< "the hash res: " << std::endl;
         BloomFilter *bf_test = new BloomFilter(10240);
         Skip_List *sl_test = new Skip_List();
+        sl_test->deleteNode(1);
+        bf_test->Contains(1);
+        sl_test->printList();
+        sl_test->searchNode(2);
         for (long long i = 0; i < 6; i ++){
             bf_test->Add(i);
-            sl_test->insertNode(i);
             sl_test->printList();
 
         }

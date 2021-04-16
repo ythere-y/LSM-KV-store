@@ -27,7 +27,7 @@ SKNode* Skip_List::searchNode(const long long &key){
     return nullptr;
 }
 
-int Skip_List::insertNode(const long long &key){
+int Skip_List::insertNode(const long long &key, std::string *s){
     std::stack<SKNode*> store;
     SKNode *cur = head;
     for (int i = listLevel; i>=0 ;i--){
@@ -44,7 +44,7 @@ int Skip_List::insertNode(const long long &key){
     //成功循环之后，store中必然会有listlevel个node
     //开始插入，随机计算次结点的高度
     SKNode * pre;
-    SKNode * add = new SKNode(key);
+    SKNode * add = new SKNode(key,s);
     int cur_level = 0;//从最下层开始
     do{
         pre = store.top();
