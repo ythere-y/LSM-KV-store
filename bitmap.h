@@ -5,41 +5,28 @@
 #include <cstring>
 class BitMap{
 private:
-    char *bitmap;
-    int size;
+    const int size = 10240;
 public:
+    char *bitmap;
     BitMap(){
-        bitmap = nullptr;
-        size = 0;
+        bitmap = new char[size];
+        memset(bitmap,0x0,size*sizeof(char));
     }
     /*
      * 用size B的大小来初始化
      */
-    BitMap(int size){
-        bitmap = nullptr;
-        bitmap = new char[size];
-        if (bitmap == nullptr)
-            printf("ErroR In BitMap Constractor!\n");
-        else{
-            memset(bitmap,0x0,size*sizeof(char));
-            this->size = size;
-        }
-    }
-    /*
-     * 用size B的大小来初始化
-     */
-    int initBitMap(int size){
-        bitmap = nullptr;
-        bitmap = new char[size];
-        if (bitmap == nullptr){
-            printf("ErroR In BitMap Constractor!");
-            return 0;
-        }else {
-            memset(bitmap,0x0,size*sizeof(char));
-            this->size=size;
-            return this->size;
-        }
-    }
+//    int initBitMap(int size){
+//        bitmap = nullptr;
+//        bitmap = new char[size];
+//        if (bitmap == nullptr){
+//            printf("ErroR In BitMap Constractor!");
+//            return 0;
+//        }else {
+//            memset(bitmap,0x0,size*sizeof(char));
+//            this->size=size;
+//            return this->size;
+//        }
+//    }
     /*
      * 将index位设为1
      */

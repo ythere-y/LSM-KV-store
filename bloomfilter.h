@@ -5,15 +5,13 @@
 class BloomFilter
 {
 private:
-    BitMap bitmap;
     int length;
 public:
+    BitMap bitmap;
     BloomFilter(){
-        bitmap.initBitMap(0);
         this->length = 0;
     };
     BloomFilter(int length){
-        bitmap.initBitMap(length);
         this->length = length;
     }
     ~BloomFilter(){};

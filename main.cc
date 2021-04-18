@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
         kv_t->reset();
         kv_t->put(2,b);
         dis_(kv_t->get(2));
+        kv_t->put(1,b);
+
+        kv_t->read_test();
 
     }
     else{

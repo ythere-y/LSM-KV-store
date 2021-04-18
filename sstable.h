@@ -28,8 +28,17 @@ public:
     std::string data;
 public:
     SSTable();
-    SSTable(MemTable *m);
+    SSTable(MemTable *m,uint64_t &_time);
     SSTable(std::string & s);
+};
+
+class SSTable_Head
+{
+public:
+    Header head;
+    BloomFilter blfter;
+    std::vector<Dict> dict;
+    SSTable_Head(){}
 };
 
 #endif // SSTABLE_H

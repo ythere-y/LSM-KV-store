@@ -4,12 +4,21 @@
 #include "memtable.h"
 #include "sstable.h"
 
+struct Level{
+    std::vector<SSTable*> all_ss;
+    int size;
+    Level():size(INT_MAX){}
+    Level(int _size):size(_size){}
+};
 
 class KVStore : public KVStoreAPI {
 	// You can add your implementation here
 private:
     MemTable *mem;
+
 //    SSTable *ss;
+    std::vector<Level*> levels;
+    int SS_write(SSTable * tar,int level);
 public:
 	KVStore(const std::string &dir);
 
@@ -23,4 +32,5 @@ public:
 
 	void reset() override;
 
+    void read_ss_head();
 };

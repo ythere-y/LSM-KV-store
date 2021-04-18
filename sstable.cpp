@@ -6,8 +6,9 @@ SSTable::SSTable()
 }
 
 
-SSTable::SSTable(MemTable * m)
+SSTable::SSTable(MemTable * m,uint64_t &_time)
 {
+    head.time_stamp = _time;
     head.nums = m->size();
     head.time_stamp = 0;
     SKNode_mem *p = m->sl->head->forward[0];
@@ -17,8 +18,10 @@ SSTable::SSTable(MemTable * m)
         head.max = p->key > head.max ? p->key : head.max;
         head.min = p->key < head.min ? p->key : head.min;
         dict.push_back(Dict(p->key,pos));
+        blfter.Add(p->key);
         pos += p->offset->size();
         data += *(p->offset);
     }
 }
+
 
