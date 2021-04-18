@@ -6,6 +6,7 @@ Skip_List_mem::Skip_List_mem()
     head = new SKNode_mem(-LONG_LONG_MAX);
     end = new SKNode_mem(LONG_LONG_MAX);
     listLevel = 0;
+    len = 0;
     head->forward.push_back(end);
 }
 
@@ -41,6 +42,7 @@ int Skip_List_mem::insertNode(const unsigned long long &key,const std::string &s
         }
         //循环后i--，自动进入下一层
     }
+    len ++;
     //成功循环之后，store中必然会有listlevel个node
     //开始插入，随机计算次结点的高度
     SKNode_mem * pre;
@@ -64,7 +66,9 @@ int Skip_List_mem::insertNode(const unsigned long long &key,const std::string &s
     }
     return 1;
 }
-int Skip_List_mem::deleteNode(const unsigned long long &key){
+uint32_t Skip_List_mem::deleteNode(const unsigned long long &key){
+    if (len == 0)
+        return 0;
     std::stack<SKNode_mem*> store;
     SKNode_mem *cur = head;
     for (int i =  listLevel; i>=0; i--){
@@ -76,9 +80,12 @@ int Skip_List_mem::deleteNode(const unsigned long long &key){
     }
     if (store.empty())
         return 0;
+
+    len --;
     int cur_level = 0;
     SKNode_mem *del = store.top()->forward[cur_level];//删除目标点
     SKNode_mem *change;
+    uint32_t res_len = del->offset->size();
     while (!store.empty()) {
         change = store.top();
         change->forward[cur_level] = change->forward[cur_level]->forward[cur_level];
@@ -86,7 +93,7 @@ int Skip_List_mem::deleteNode(const unsigned long long &key){
         cur_level ++;
     }
     delete del;
-    return 1;   //删除成功，返回1
+    return res_len;   //删除成功，返回被删除的string的长度
 }
 
 

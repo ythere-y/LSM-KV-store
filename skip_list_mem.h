@@ -27,13 +27,15 @@ private:
     SKNode_mem *head;
     SKNode_mem *end;
     int listLevel;
+    int len;
 public:
     Skip_List_mem();
     ~Skip_List_mem();
     SKNode_mem*searchNode(const unsigned long long &key);
     int insertNode(const unsigned long long &key,const std::string &s);
-    int deleteNode(const unsigned long long &key);
+    uint32_t deleteNode(const unsigned long long &key);
     void printList();
+    uint32_t size(){return this->len;};
 };
 
 #endif // SKIP_LIST_H

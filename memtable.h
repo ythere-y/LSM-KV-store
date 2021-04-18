@@ -11,6 +11,9 @@ class MemTable
 {
 private:
     Skip_List_mem *sl;       //索引区，用跳表实现
+    uint32_t memory_remaining;
+    uint32_t memory_usage;
+    uint32_t len;
 
 public:
     MemTable();
