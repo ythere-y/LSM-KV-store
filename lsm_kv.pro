@@ -13,7 +13,8 @@ SOURCES += \
     main.cc \
     memtable.cpp \
     skip_list.cpp \
-    skip_list_mem.cpp
+    skip_list_mem.cpp \
+    sstable.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -30,5 +31,6 @@ HEADERS += \
     memtable.h \
     skip_list.h \
     skip_list_mem.h \
+    sstable.h \
     test.h \
     utils.h

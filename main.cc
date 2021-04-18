@@ -4,9 +4,7 @@
 
 #include "test.h"
 
-
-#include "skip_list.h"
-#include "bloomfilter.h"
+#include "memtable.h"
 
 const bool global_test = true;
 
@@ -76,25 +74,15 @@ public:
 
 int main(int argc, char *argv[])
 {
+    std::string a = "hello world";
+    std::string b = "this is my test way";
 
     if (global_test){
         std::cout<< "the hash res: " << std::endl;
-        BloomFilter *bf_test = new BloomFilter(10240);
-        Skip_List *sl_test = new Skip_List();
-        sl_test->deleteNode(1);
-        bf_test->Contains(1);
-        sl_test->printList();
-        sl_test->searchNode(2);
-        for (long long i = 0; i < 6; i ++){
-            bf_test->Add(i);
-            sl_test->printList();
+        MemTable * mem_t = new MemTable(40);
+        mem_t->insert(1,a);
+        std::cout<< mem_t->search(1) << std::endl;
 
-        }
-        if (bf_test->Contains(2))
-            std::cout << "find 2 in fliter OK~!\n";
-        sl_test->printList();
-        sl_test->deleteNode(3);
-        sl_test->printList();
     }
     else{
         bool verbose = (argc == 2 && std::string(argv[1]) == "-v");

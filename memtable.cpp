@@ -3,7 +3,7 @@
 MemTable::MemTable():memory_remaining(0),memory_usage(0),len(0){}
 MemTable::MemTable(uint32_t size):memory_remaining(size),memory_usage(0),len(0){}
 
-int MemTable::insert(uint64_t key, const std::string &s){
+int MemTable::insert(long long  key, const std::string &s){
     uint32_t length = s.size();
     if (length + 1 > memory_remaining)
         return -1;
@@ -15,12 +15,12 @@ int MemTable::insert(uint64_t key, const std::string &s){
     return 1;
 }
 
-std::string MemTable::search(uint64_t key){
+std::string MemTable::search(long long  key){
     SKNode_mem* get = sl->searchNode(key);
     return *get->offset;
 }
 
-bool MemTable::remove(uint64_t key){
+bool MemTable::remove(long long  key){
     uint32_t length = sl->deleteNode(key);
     if (length){
         len--;

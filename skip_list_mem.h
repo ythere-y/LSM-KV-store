@@ -6,16 +6,16 @@
 #include <string>
 
 struct SKNode_mem{
-    uint64_t key;
+    long long key;
     const std::string * offset;
     std::vector<SKNode_mem*> forward;
     SKNode_mem(){
         key = 0;
     }
-    SKNode_mem(const uint64_t &tar){
+    SKNode_mem(const long long &tar){
         key = tar;
     };
-    SKNode_mem(const uint64_t &tar, const std::string &s){
+    SKNode_mem(const long long &tar, const std::string &s){
         key = tar;
         offset = &s;
     }
@@ -23,7 +23,8 @@ struct SKNode_mem{
 
 class Skip_List_mem
 {
-private:
+//private:
+public:
     SKNode_mem *head;
     SKNode_mem *end;
     int listLevel;
@@ -31,9 +32,9 @@ private:
 public:
     Skip_List_mem();
     ~Skip_List_mem();
-    SKNode_mem*searchNode(const unsigned long long &key);
-    int insertNode(const unsigned long long &key,const std::string &s);
-    uint32_t deleteNode(const unsigned long long &key);
+    SKNode_mem*searchNode(const long long &key);
+    int insertNode(const long long &key,const std::string &s);
+    uint32_t deleteNode(const long long &key);
     void printList();
     uint32_t size(){return this->len;};
 };

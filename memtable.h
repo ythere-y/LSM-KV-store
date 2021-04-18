@@ -9,18 +9,21 @@
 
 class MemTable
 {
-private:
-    Skip_List_mem *sl;       //索引区，用跳表实现
+//private:
+public:
+    Skip_List_mem *sl = new Skip_List_mem;       //索引区，用跳表实现
     uint32_t memory_remaining;
     uint32_t memory_usage;
     uint32_t len;
 
 public:
     MemTable();
+    MemTable(uint32_t size);
     ~MemTable();
-    int insert(uint64_t key, const std::string &s);
-    std::string search(uint64_t key);
-    bool remove(uint64_t key);
+    int insert(long long key, const std::string &s);
+    std::string search(long long key);
+    bool remove(long long key);
+    uint32_t size(){return len;}
     void reset();
 };
 
