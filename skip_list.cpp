@@ -91,8 +91,8 @@ int Skip_List::deleteNode(const unsigned long long &key){
 
 
 void Skip_List::printList(){
-    SKNode * cur = head;
-    SKNode * down = head;
+    SKNode * cur;
+    SKNode * down;
     for (int i = listLevel; i >= 0; i --){
         cur = head;
         down = head;

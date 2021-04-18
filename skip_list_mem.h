@@ -30,9 +30,9 @@ private:
 public:
     Skip_List();
     ~Skip_List();
-    SKNode*searchNode(const long long &key);
-    int insertNode(const long long &key,const std::string &s);
-    int deleteNode(const long long &key);
+    SKNode*searchNode(const unsigned long long &key);
+    int insertNode(const unsigned long long &key,const std::string &s);
+    int deleteNode(const unsigned long long &key);
     void printList();
 };
 
