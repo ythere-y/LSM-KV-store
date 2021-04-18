@@ -8,7 +8,7 @@ int MemTable::insert(long long  key, const std::string &s){
     uint32_t length = s.size();
     if (length + 1 > memory_remaining)
         return -1;
-    // 空间不足，插入失败
+    // 空间不足，插入失败,返回-1
     sl->insertNode(key,s);
     len ++;
     memory_remaining -= (length+1);
@@ -32,7 +32,7 @@ int MemTable::remove(long long  key){
     }
 
     if (insert(key,D_str) == -1)
-        return -2;  //特殊标识，标识插入deleted时满
+        return -1;  //特殊标识，标识插入deleted时满
     else
         return 1;
 }
