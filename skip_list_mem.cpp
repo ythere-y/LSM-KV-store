@@ -36,7 +36,14 @@ int Skip_List_mem::insertNode(const long long &key,const std::string &s){
             cur = cur->forward[i];
         }
         if (cur->forward[i]->key == key){   //如果找到一样的，就放弃
+            //TODO:有没有更好的不用重复insert的方法
+            if (*(cur->forward[i]->offset) == "~DELETED~")  //如果找到的是之前的删除标记
+            {
+                deleteNode(key);
+                insertNode(key,s);
+            }
             return 1;
+
         }else{      //没有找到，就暂时将这一层入栈
             store.push(cur);
         }
@@ -92,6 +99,11 @@ uint32_t Skip_List_mem::deleteNode(const long long &key){
         store.pop();
         cur_level ++;
     }
+    while(listLevel >= 1 && head->forward[listLevel]->key == LONG_LONG_MAX){
+        head->forward.pop_back();
+        end->forward.pop_back();
+        listLevel--;
+    }   //删除多余的高度
     delete del;
     return res_len;   //删除成功，返回被删除的string的长度
 }

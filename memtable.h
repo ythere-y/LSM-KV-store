@@ -22,7 +22,7 @@ public:
     ~MemTable();
     int insert(long long key, const std::string &s);
     std::string search(long long key);
-    bool remove(long long key);
+    int remove(long long key);
     uint32_t size(){return len;}
     void reset();
 };

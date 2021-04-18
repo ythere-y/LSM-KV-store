@@ -72,16 +72,66 @@ public:
 	}
 };
 
+void dis_(std::string tar){
+    std::cout<<tar<<std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     std::string a = "hello world";
     std::string b = "this is my test way";
-
+    std::string t_se;
     if (global_test){
         std::cout<< "the hash res: " << std::endl;
-        MemTable * mem_t = new MemTable(40);
+        MemTable * mem_t = new MemTable(30);
+
+        t_se = mem_t->search(1);
+        if (t_se == "")
+            dis_("not found");
+        else
+            dis_(t_se);
+
+
+        mem_t->remove(1);
+
+        t_se = mem_t->search(1);
+        if (t_se == "")
+            dis_("not found");
+        else
+            dis_(t_se);
+
         mem_t->insert(1,a);
-        std::cout<< mem_t->search(1) << std::endl;
+        t_se = mem_t->search(1);
+        if (t_se == "")
+            dis_("not found");
+        else
+            dis_(t_se);
+
+        mem_t->reset();
+        t_se = mem_t->search(1);
+        if (t_se == "")
+            dis_("not found");
+        else
+            dis_(t_se);
+
+        t_se = mem_t->search(1);
+        if (t_se == "")
+            dis_("not found");
+        else
+            dis_(t_se);
+
+        if (mem_t->insert(2,b)==-1)
+            std::cout<< "failed" << std::endl;
+        else
+            std::cout<<"no?"<<std::endl;
+
+        t_se = mem_t->search(2);
+        if (t_se == "")
+            dis_("not found");
+        else
+            dis_(t_se);
+
+
 
     }
     else{
