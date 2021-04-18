@@ -5,32 +5,32 @@
 #include <vector>
 #include <string>
 
-struct SKNode{
+struct SKNode_mem{
     uint64_t key;
     const std::string * offset;
-    std::vector<SKNode*> forward;
-    SKNode(){
+    std::vector<SKNode_mem*> forward;
+    SKNode_mem(){
         key = 0;
     }
-    SKNode(const uint64_t &tar){
+    SKNode_mem(const uint64_t &tar){
         key = tar;
     };
-    SKNode(const uint64_t &tar, const std::string &s){
+    SKNode_mem(const uint64_t &tar, const std::string &s){
         key = tar;
         offset = &s;
     }
 };
 
-class Skip_List
+class Skip_List_mem
 {
 private:
-    SKNode *head;
-    SKNode *end;
+    SKNode_mem *head;
+    SKNode_mem *end;
     int listLevel;
 public:
-    Skip_List();
-    ~Skip_List();
-    SKNode*searchNode(const unsigned long long &key);
+    Skip_List_mem();
+    ~Skip_List_mem();
+    SKNode_mem*searchNode(const unsigned long long &key);
     int insertNode(const unsigned long long &key,const std::string &s);
     int deleteNode(const unsigned long long &key);
     void printList();

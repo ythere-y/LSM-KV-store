@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "bloomfilter.h"
-#include "skip_list.h"
+#include "skip_list_mem.h"
 
 
 struct Header{
@@ -24,9 +24,7 @@ struct Header{
 class MemTable
 {
 private:
-    Header *head;        //用于存放元数据
-    BloomFilter *bf;     //布隆过滤器
-    Skip_List *sl;       //索引区，用跳表实现
+    Skip_List_mem *sl;       //索引区，用跳表实现
     std::vector<std::string> *vals;  //数据区，用于存储string
 
 public:

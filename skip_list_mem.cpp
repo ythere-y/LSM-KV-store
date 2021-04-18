@@ -1,7 +1,7 @@
 #include "skip_list_mem.h"
 #include <stack>
 #include <iostream>
-Skip_List::Skip_List()
+Skip_List_mem::Skip_List_mem()
 {
     head = new SKNode_mem(-LONG_LONG_MAX);
     end = new SKNode_mem(LONG_LONG_MAX);
@@ -9,11 +9,11 @@ Skip_List::Skip_List()
     head->forward.push_back(end);
 }
 
-Skip_List::~Skip_List(){
+Skip_List_mem::~Skip_List_mem(){
     delete head;
 }
 
-SKNode_mem* Skip_List::searchNode(const unsigned long long &key){
+SKNode_mem* Skip_List_mem::searchNode(const unsigned long long &key){
     SKNode_mem * cur = head;
     for (int i = listLevel;i>=0;i--){
         while(cur->forward[i]->key != LONG_LONG_MAX && cur->forward[i]->key < key)
@@ -27,7 +27,7 @@ SKNode_mem* Skip_List::searchNode(const unsigned long long &key){
     return nullptr;
 }
 
-int Skip_List::insertNode(const unsigned long long &key,const std::string &s){
+int Skip_List_mem::insertNode(const unsigned long long &key,const std::string &s){
     std::stack<SKNode_mem*> store;
     SKNode_mem *cur = head;
     for (int i = listLevel; i>=0 ;i--){
@@ -64,7 +64,7 @@ int Skip_List::insertNode(const unsigned long long &key,const std::string &s){
     }
     return 1;
 }
-int Skip_List::deleteNode(const unsigned long long &key){
+int Skip_List_mem::deleteNode(const unsigned long long &key){
     std::stack<SKNode_mem*> store;
     SKNode_mem *cur = head;
     for (int i =  listLevel; i>=0; i--){
@@ -90,7 +90,7 @@ int Skip_List::deleteNode(const unsigned long long &key){
 }
 
 
-void Skip_List::printList(){
+void Skip_List_mem::printList(){
     SKNode_mem * cur;
     SKNode_mem * down;
     for (int i = listLevel; i >= 0; i --){

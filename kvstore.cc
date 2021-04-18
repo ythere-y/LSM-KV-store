@@ -15,12 +15,6 @@ KVStore::~KVStore()
  */
 void KVStore::put(uint64_t key, const std::string &s)
 {
-    if (bf->Contains(key))
-        return;
-    head->Add(key);
-    bf->Add(key);
-    sl->insertNode(key,s);
-    vals->push_back(s);
 }
 /**
  * Returns the (string) value of the given key.
@@ -28,12 +22,7 @@ void KVStore::put(uint64_t key, const std::string &s)
  */
 std::string KVStore::get(uint64_t key)
 {
-    if (key < head->key_min || key > head->key_max)
         return "";
-    if (!bf->Contains(key))
-        return "";
-    SKNode* get = sl->searchNode(key);
-    return *get->offset;
 }
 /**
  * Delete the given key-value pair if it exists.
