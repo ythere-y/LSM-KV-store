@@ -7,7 +7,7 @@
 
 struct SKNode{
     uint64_t key;
-    const std::string * offset;
+    uint32_t offset;
     std::vector<SKNode*> forward;
     SKNode(){
         key = 0;
@@ -15,9 +15,9 @@ struct SKNode{
     SKNode(const uint64_t &tar){
         key = tar;
     };
-    SKNode(const uint64_t &tar, const std::string &s){
+    SKNode(const uint64_t &tar, const uint32_t _offset){
         key = tar;
-        offset = &s;
+        offset = _offset;
     }
 };
 
@@ -31,7 +31,7 @@ public:
     Skip_List();
     ~Skip_List();
     SKNode*searchNode(const unsigned long long &key);
-    int insertNode(const unsigned long long &key,const std::string &s);
+    int insertNode(const unsigned long long &key,const uint32_t &s);
     int deleteNode(const unsigned long long &key);
     void printList();
 };

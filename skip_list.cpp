@@ -27,7 +27,7 @@ SKNode* Skip_List::searchNode(const unsigned long long &key){
     return nullptr;
 }
 
-int Skip_List::insertNode(const unsigned long long &key, const std::string &s){
+int Skip_List::insertNode(const unsigned long long &key, const uint32_t &s){
     std::stack<SKNode*> store;
     SKNode *cur = head;
     for (int i = listLevel; i>=0 ;i--){

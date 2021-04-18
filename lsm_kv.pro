@@ -29,6 +29,6 @@ HEADERS += \
     kvstore_api.h \
     memtable.h \
     skip_list.h \
-    skip_list.h \
+    skip_list_mem.h \
     test.h \
     utils.h

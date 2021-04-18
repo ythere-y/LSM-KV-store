@@ -3,8 +3,8 @@
 #include <iostream>
 Skip_List::Skip_List()
 {
-    head = new SKNode(-LONG_LONG_MAX);
-    end = new SKNode(LONG_LONG_MAX);
+    head = new SKNode_mem(-LONG_LONG_MAX);
+    end = new SKNode_mem(LONG_LONG_MAX);
     listLevel = 0;
     head->forward.push_back(end);
 }
@@ -13,8 +13,8 @@ Skip_List::~Skip_List(){
     delete head;
 }
 
-SKNode* Skip_List::searchNode(const unsigned long long &key){
-    SKNode * cur = head;
+SKNode_mem* Skip_List::searchNode(const unsigned long long &key){
+    SKNode_mem * cur = head;
     for (int i = listLevel;i>=0;i--){
         while(cur->forward[i]->key != LONG_LONG_MAX && cur->forward[i]->key < key)
             cur = cur->forward[i];
@@ -28,8 +28,8 @@ SKNode* Skip_List::searchNode(const unsigned long long &key){
 }
 
 int Skip_List::insertNode(const unsigned long long &key,const std::string &s){
-    std::stack<SKNode*> store;
-    SKNode *cur = head;
+    std::stack<SKNode_mem*> store;
+    SKNode_mem *cur = head;
     for (int i = listLevel; i>=0 ;i--){
         while(cur->forward[i]->key != LONG_LONG_MAX && cur->forward[i]->key < key){
             cur = cur->forward[i];
@@ -43,8 +43,8 @@ int Skip_List::insertNode(const unsigned long long &key,const std::string &s){
     }
     //成功循环之后，store中必然会有listlevel个node
     //开始插入，随机计算次结点的高度
-    SKNode * pre;
-    SKNode * add = new SKNode(key,s);
+    SKNode_mem * pre;
+    SKNode_mem * add = new SKNode_mem(key,s);
     int cur_level = 0;//从最下层开始
     do{
         pre = store.top();
@@ -65,8 +65,8 @@ int Skip_List::insertNode(const unsigned long long &key,const std::string &s){
     return 1;
 }
 int Skip_List::deleteNode(const unsigned long long &key){
-    std::stack<SKNode*> store;
-    SKNode *cur = head;
+    std::stack<SKNode_mem*> store;
+    SKNode_mem *cur = head;
     for (int i =  listLevel; i>=0; i--){
         while(cur->forward[i]->key!=LONG_LONG_MAX && cur->forward[i]->key < key)
             cur=cur->forward[i];
@@ -77,8 +77,8 @@ int Skip_List::deleteNode(const unsigned long long &key){
     if (store.empty())
         return 0;
     int cur_level = 0;
-    SKNode *del = store.top()->forward[cur_level];//删除目标点
-    SKNode *change;
+    SKNode_mem *del = store.top()->forward[cur_level];//删除目标点
+    SKNode_mem *change;
     while (!store.empty()) {
         change = store.top();
         change->forward[cur_level] = change->forward[cur_level]->forward[cur_level];
@@ -91,8 +91,8 @@ int Skip_List::deleteNode(const unsigned long long &key){
 
 
 void Skip_List::printList(){
-    SKNode * cur;
-    SKNode * down;
+    SKNode_mem * cur;
+    SKNode_mem * down;
     for (int i = listLevel; i >= 0; i --){
         cur = head;
         down = head;
