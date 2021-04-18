@@ -12,7 +12,8 @@ SOURCES += \
     kvstore.cc \
     main.cc \
     memtable.cpp \
-    skip_list.cpp
+    skip_list.cpp \
+    skip_list_mem.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -27,6 +28,7 @@ HEADERS += \
     kvstore.h \
     kvstore_api.h \
     memtable.h \
+    skip_list.h \
     skip_list.h \
     test.h \
     utils.h
