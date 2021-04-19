@@ -41,6 +41,8 @@ int Skip_List_mem::insertNode(const long long &key,const std::string &s){
             {
                 deleteNode(key);
                 insertNode(key,s);
+            }else{
+                cur->offset = &s;    //覆盖
             }
             return 1;
 

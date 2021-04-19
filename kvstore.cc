@@ -2,6 +2,9 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+
+const std::string D_str = "~DELETED~";
+
 KVStore::KVStore(const std::string &dir): KVStoreAPI(dir)
 {
     mem = new MemTable(30);
@@ -83,6 +86,17 @@ void KVStore::put(uint64_t key, const std::string &s)
 std::string KVStore::get(uint64_t key)
 {
     std::string get =  mem->search(key);
+    if (get == ""){
+        for (auto iter : levels[0]->all_ss){
+            if (iter->head.min <= key && iter->head.max >= key && iter->blfter.Contains(key)){
+                //确保在这个区块
+                // TODO:读取这个SSTable的数据区
+//                read_ss()
+                return "get";
+            }
+        }
+        return get;
+    }
     return get;
 }
 /**
@@ -91,9 +105,8 @@ std::string KVStore::get(uint64_t key)
  */
 bool KVStore::del(uint64_t key)
 {
-    if(mem->remove(key)==-1){
-        std::cout<< "failed to insert deleted" << std::endl;
-    }
+    mem->remove(key);
+    put(key,D_str);
     return true;
 }
 
@@ -103,6 +116,9 @@ bool KVStore::del(uint64_t key)
  */
 void KVStore::reset()
 {
+    for(auto iter : levels[0]->all_ss){
+        iter->reset();
+    }
     mem->reset();
 }
 

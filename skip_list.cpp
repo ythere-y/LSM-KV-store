@@ -34,7 +34,8 @@ int Skip_List::insertNode(const unsigned long long &key, const uint32_t &s){
         while(cur->forward[i]->key != LONG_LONG_MAX && cur->forward[i]->key < key){
             cur = cur->forward[i];
         }
-        if (cur->forward[i]->key == key){   //如果找到一样的，就放弃
+        if (cur->forward[i]->key == key){   //如果找到一样的，就覆盖
+            cur->offset = s;
             return 1;
         }else{      //没有找到，就暂时将这一层入栈
             store.push(cur);

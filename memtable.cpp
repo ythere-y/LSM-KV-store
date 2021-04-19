@@ -31,9 +31,9 @@ int MemTable::remove(long long  key){
         memory_usage -= length;
     }
 
-    if (insert(key,D_str) == -1)
-        return -1;  //特殊标识，标识插入deleted时满
-    else
+//    if (insert(key,D_str) == -1)
+//        return -1;  //特殊标识，标识插入deleted时满
+//    else
         return 1;
 }
 

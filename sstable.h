@@ -30,6 +30,7 @@ public:
     SSTable();
     SSTable(MemTable *m,uint64_t &_time);
     SSTable(std::string & s);
+    void reset();
 };
 
 class SSTable_Head
