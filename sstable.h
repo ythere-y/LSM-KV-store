@@ -5,8 +5,8 @@
 #include "bloomfilter.h"
 
 struct Header{
-    uint64_t time_stamp;
-    uint64_t nums;
+    uint64_t time_stamp = 0;
+    uint64_t nums = 0;
     long long max = LONG_LONG_MIN;
     long long min = LONG_LONG_MAX;
     Header(){}

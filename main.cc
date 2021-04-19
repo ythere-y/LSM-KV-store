@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdint>
 #include <string>
-
+#include <fstream>
 #include "test.h"
 
 #include "kvstore.h"
@@ -79,6 +79,50 @@ void dis_(std::string tar){
         std::cout<<tar<<std::endl;
 }
 
+struct File_t{
+    Header head;
+//    std::string data;
+    int data = 0;
+//    std::vector<int>ok;
+    int ok[2];
+    File_t(){};
+    File_t(uint64_t _t, uint64_t _n,long long _max, long long _min,int _data){
+        head.time_stamp=_t;
+        head.nums = _n;
+        head.max = _max;
+        head.min = _min;
+        data = _data;
+//        ok.push_back(121);
+//        ok.push_back(212);
+        ok[0] = 121;
+        ok[1] = 212;
+    };
+    ~File_t(){};
+};
+
+void io_test(){
+    auto outf = [](){
+        File_t f(1,2,3,4,5);
+        std::ofstream outFile("iotest.sst",std::ios::out|std::ios::binary);
+        outFile.write((char*)&f,44);
+        outFile.close();
+    };
+    auto inf = [](){
+        std::ifstream inFile("iotest.sst",std::ios::in|std::ios::binary);
+        if (!inFile)
+            dis_("error");
+        File_t ins;
+        inFile.read((char*)&ins,44);
+        int readBytes = inFile.gcount();
+        std::cout<<ins.head.time_stamp<<','<<ins.head.nums<<','<<ins.head.max<<','<<ins.head.min<<','<<ins.data<< std::endl;
+        std::cout<<ins.ok[0]<<','<<ins.ok[1]<<std::endl;
+        inFile.close();
+    };
+    outf();
+    inf();
+    return;
+}
+
 int main(int argc, char *argv[])
 {
     if (global_test){
@@ -90,16 +134,17 @@ int main(int argc, char *argv[])
 
         KVStore * kv_t = new KVStore("hello");
 
-        kv_t->put(1,a);
-        dis_(kv_t->get(1));
-        kv_t->del(1);
-        dis_(kv_t->get(1));
-        kv_t->reset();
-        kv_t->put(2,b);
-        dis_(kv_t->get(2));
-        kv_t->put(1,b);
+//        kv_t->put(1,a);
+//        dis_(kv_t->get(1));
+//        kv_t->del(1);
+//        dis_(kv_t->get(1));
+//        kv_t->reset();
+//        kv_t->put(2,b);
+//        dis_(kv_t->get(2));
+//        kv_t->put(1,b);
 
-        kv_t->read_test();
+//        kv_t->read_ss_head();
+        io_test();
 
     }
     else{

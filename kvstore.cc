@@ -50,6 +50,9 @@ void KVStore::read_ss_head(){
         inFile.read((char*)&(add.offset),4);
         test->dict.push_back(add);
     }
+    std::string read_test;
+    std::memset(&read_test,'\0',8);
+    inFile.read((char*)&read_test,8);
     inFile.close();
 }
 
