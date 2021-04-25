@@ -81,9 +81,7 @@ void dis_(std::string tar){
 
 struct File_t{
     Header head;
-//    std::string data;
     int data = 0;
-//    std::vector<int>ok;
     int ok[2];
     File_t(){};
     File_t(uint64_t _t, uint64_t _n,long long _max, long long _min,int _data){
@@ -92,8 +90,6 @@ struct File_t{
         head.max = _max;
         head.min = _min;
         data = _data;
-//        ok.push_back(121);
-//        ok.push_back(212);
         ok[0] = 121;
         ok[1] = 212;
     };
@@ -126,25 +122,16 @@ void io_test(){
 int main(int argc, char *argv[])
 {
     if (global_test){
-        std::string a = "hello world";
-        std::string b = "this is my test way";
+        std::string a = "hello world";          //char[12]
+        std::string b = "this is my test way";  //char[20]
         std::string t_se;
 
-        std::cout<< "the hash res: " << std::endl;
+        KVStore * kv_t = new KVStore("h");  //目前设置的最大内容量为30
 
-        KVStore * kv_t = new KVStore("hello");
-
-//        kv_t->put(1,a);
-//        dis_(kv_t->get(1));
-//        kv_t->del(1);
-//        dis_(kv_t->get(1));
-//        kv_t->reset();
-//        kv_t->put(2,b);
-//        dis_(kv_t->get(2));
-//        kv_t->put(1,b);
-
-//        kv_t->read_ss_head();
-        io_test();
+//        io_test();
+        kv_t->put(1,a);
+        kv_t->put(2,a);
+        kv_t->put(3,a);
 
     }
     else{

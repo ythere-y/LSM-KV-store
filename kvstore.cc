@@ -1,7 +1,6 @@
 #include "kvstore.h"
 #include <string>
 #include <iostream>
-#include <fstream>
 
 const std::string D_str = "~DELETED~";
 
@@ -24,7 +23,7 @@ int KVStore::SS_write(SSTable* tar,int level){
         outFile.write((char*)&(tar->dict[i].key),8);
         outFile.write((char*)&(tar->dict[i].offset),4);
     }
-    outFile.write(tar->data.c_str(),sizeof(tar->data));
+//    outFile.write(tar->data.c_str(),sizeof(tar->data));
     outFile.close();
     return 0;
 }
@@ -70,13 +69,13 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const std::string &s)
 {
     uint64_t time = 0;
-    if (mem->insert(key,s)==-1){
-        std::cout<<"failed to insert"<< std::endl;
-        SSTable * add = new SSTable(mem,time);//创建一个新的mem,SSTabel 的level为0
-        levels[0]->all_ss.push_back(add);//把这个新的直接放到level_0里面
-        mem->reset();                   //mem重置
-        SS_write(add,0);     //根据这个新的SSTable，将部分数据写到磁盘
-        put(key,s);                     //重新put一次
+    if (mem->insert(key,s)==-1){                //如果插入成功，则返回0，插入失败则返回-1，进入特殊处理
+        std::cout<<"failed to insert"<< std::endl;  //输出失败提示
+//        SSTable_Head * add = new SSTable_Head(mem,time);  //创建一个新的mem,SSTabel 的level为0
+        SSTable * add = new SSTable(mem,time);  //创建一个新的mem,SSTabel 的level为0
+        levels[0]->heads_in_level.push_back(add);       //把这个新的直接放到level_0里面
+        mem->reset();                           //mem重置
+        put(key,s);                             //重新put一次
     }
 }
 /**
@@ -85,19 +84,20 @@ void KVStore::put(uint64_t key, const std::string &s)
  */
 std::string KVStore::get(uint64_t key)
 {
-    std::string get =  mem->search(key);
-    if (get == ""){
-        for (auto iter : levels[0]->all_ss){
-            if (iter->head.min <= key && iter->head.max >= key && iter->blfter.Contains(key)){
-                //确保在这个区块
-                // TODO:读取这个SSTable的数据区
-//                read_ss()
-                return "get";
-            }
-        }
-        return get;
-    }
-    return get;
+    return "";
+//    std::string get =  mem->search(key);
+//    if (get == ""){
+//        for (auto iter : levels[0]->all_ss){
+//            if (iter->head.min <= key && iter->head.max >= key && iter->blfter.Contains(key)){
+//                //确保在这个区块
+//                // TODO:读取这个SSTable的数据区
+////                read_ss()
+//                return "get";
+//            }
+//        }
+//        return get;
+//    }
+//    return get;
 }
 /**
  * Delete the given key-value pair if it exists.
@@ -116,9 +116,10 @@ bool KVStore::del(uint64_t key)
  */
 void KVStore::reset()
 {
-    for(auto iter : levels[0]->all_ss){
-        iter->reset();
-    }
-    mem->reset();
+    return;
+//    for(auto iter : levels[0]->all_ss){
+//        iter->reset();
+//    }
+//    mem->reset();
 }
 

@@ -4,8 +4,8 @@
 #include "memtable.h"
 #include "sstable.h"
 
-struct Level{
-    std::vector<SSTable*> all_ss;
+struct Level{   //对于每个层级，直接存储的内容只是SSTable的haead
+    std::vector<SSTable*> heads_in_level;      //存储这一层级中的head
     int size;
     Level():size(INT_MAX){}
     Level(int _size):size(_size){}
@@ -17,7 +17,7 @@ private:
     MemTable *mem;
 
 //    SSTable *ss;
-    std::vector<Level*> levels;
+    std::vector<Level*> levels;     //存储多个层级
     int SS_write(SSTable * tar,int level);
 public:
 	KVStore(const std::string &dir);

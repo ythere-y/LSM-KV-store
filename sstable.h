@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include "memtable.h"
 #include "bloomfilter.h"
-
+#include <fstream>
+#include <iostream>
 struct Header{
     uint64_t time_stamp = 0;
     uint64_t nums = 0;
@@ -25,7 +26,8 @@ public:
     Header head;
     BloomFilter blfter;
     std::vector<Dict> dict;
-    std::string data;
+//    std::string data;
+    void write_to_file();
 public:
     SSTable();
     SSTable(MemTable *m,uint64_t &_time);
@@ -40,6 +42,7 @@ public:
     BloomFilter blfter;
     std::vector<Dict> dict;
     SSTable_Head(){}
+//    SSTable_Head(MemTable*m,uint64_t &_time);
 };
 
 #endif // SSTABLE_H
