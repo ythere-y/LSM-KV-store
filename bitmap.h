@@ -13,21 +13,6 @@ public:
         memset(bitmap,0x0,size*sizeof(char));
     }
     /*
-     * 用size B的大小来初始化
-     */
-//    int initBitMap(int size){
-//        bitmap = nullptr;
-//        bitmap = new char[size];
-//        if (bitmap == nullptr){
-//            printf("ErroR In BitMap Constractor!");
-//            return 0;
-//        }else {
-//            memset(bitmap,0x0,size*sizeof(char));
-//            this->size=size;
-//            return this->size;
-//        }
-//    }
-    /*
      * 将index位设为1
      */
     int bitmapSet(unsigned int index){

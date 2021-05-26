@@ -1,6 +1,8 @@
 #pragma once
 
 #include "kvstore_api.h"
+#include<io.h>
+
 #include "memtable.h"
 #include "sstable.h"
 
@@ -15,6 +17,8 @@ class KVStore : public KVStoreAPI {
 	// You can add your implementation here
 private:
     MemTable *mem;
+    uint32_t level_to_int(std::string level_name);
+    uint32_t id_to_int(std::string id_name);
 
 //    SSTable *ss;
     std::vector<Level*> levels;     //存储多个层级
@@ -32,5 +36,5 @@ public:
 
 	void reset() override;
 
-    void read_ss_head();
+    void init_SSTables();
 };

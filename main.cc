@@ -127,11 +127,16 @@ int main(int argc, char *argv[])
         std::string t_se;
 
         KVStore * kv_t = new KVStore("h");  //目前设置的最大内容量为30
+        kv_t->reset();
+        kv_t->init_SSTables();
+
 
 //        io_test();
         kv_t->put(1,a);
         kv_t->put(2,a);
         kv_t->put(3,a);
+        std::string get_test = kv_t->get(3);
+        printf("\nget the res is : %s\n",get_test.c_str());
 
     }
     else{
