@@ -120,6 +120,7 @@ void KVStore::put(uint64_t key, const std::string &s)
     if (mem->insert(key,s)==-1){                //如果插入成功，则返回0，插入失败则返回-1，进入特殊处理
         printf("the key %lu insert to a new memtable\n",key);
         int name_id = levels[0]->heads_in_level.size();
+        recombination();
         uint32_t level =0;
         SSTable * add = new SSTable(mem,time,level,name_id);  //根据MEMTable创建一个新的SSTabel 的level为0
         levels[0]->heads_in_level.push_back(add);       //把这个新的直接放到level_0里面
@@ -215,5 +216,36 @@ void KVStore::reset()
         }while(_findnext(hFile,&fileinfo)==0);
     }
     return;
+}
+/* 检查level的数量，并且进行重组 */
+void KVStore::recombination(){
+    if (levels[0]->heads_in_level.size() > 2)//如果第一层多余2个，发动重组
+    {
+        std::vector<SSTable*> recombineList;    //需要合并的列表
+        int tmp_min = INT_MAX;
+        int tmp_max = INT_MIN;
+        //第0层的全都加入
+        for(auto table: levels[0]->heads_in_level)
+        {
+            recombineList.push_back(table);
+            tmp_min = table->head.min < tmp_min ? table->head.min : tmp_min;
+            tmp_max = table->head.max > tmp_max ? table->head.max : tmp_max;
+        }
+        if (levels.size()>=2)//如果有第1层
+        {
+            for (auto table:levels[1]->heads_in_level)
+            {
+                //如果范围无交集，直接跳过
+                if (table->head.min > tmp_max || table->head.max < tmp_min)
+                    continue;
+                else{
+                    recombineList.push_back(table);//加入需要合并的列表
+                }
+
+            }
+
+        }
+        /* TODO:归并操作，将一个List中的所有SSTable进行归并，并再次分解为2M一个的SSTable */
+    }
 }
 

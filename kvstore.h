@@ -23,6 +23,7 @@ private:
 //    SSTable *ss;
     std::vector<Level*> levels;     //存储多个层级
     int SS_write(SSTable * tar,int level);
+    void recombination();
 public:
 	KVStore(const std::string &dir);
 
