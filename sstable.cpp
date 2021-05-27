@@ -23,8 +23,9 @@ SSTable::SSTable(MemTable * m,uint64_t &_time,uint32_t level, uint32_t id)
         head.min = p->key < head.min ? p->key : head.min;   //更新最小值
         dict.push_back(Dict(p->key,pos));                   //索引更新
         blfter.Add(p->key);                                 //布隆过滤器同步更新
-        pos += p->offset->size();                           //索引点向后移动
-        str_data += *(p->offset);                               //data就是存储的string
+        pos += p->offset.size();                           //索引点向后移动
+        str_data += (p->offset);                               //data就是存储的string
+        p = p->forward[0];
     }
     //生成一个SSTable之后就写入到硬盘
     char*filename = new char;
@@ -40,24 +41,24 @@ void SSTable::write_to_file(std::ofstream &outFile, std::string & str_data){
     //写布隆过滤器
     memcpy(buff,blfter.bitmap.bitmap,10240);
     outFile.write(buff,10240);
-    printf("test of the yuan bitmap :\n");
-    printf("test 1 : %d\n",blfter.Contains(1));
-    printf("test 3 : %d\n",blfter.Contains(3));
-    printf("test 5 : %d\n",blfter.Contains(5));
+//    printf("test of the yuan bitmap :\n");
+//    printf("test 1 : %d\n",blfter.Contains(1));
+//    printf("test 3 : %d\n",blfter.Contains(3));
+//    printf("test 5 : %d\n",blfter.Contains(5));
     //写索引区
     outFile.write((char*)&(dict),head.nums*12);
-    printf("the dict is\n");
-    for (unsigned int i = 0; i < head.nums; i++){
-        printf("{%llu,%u};",dict[i].key,dict[i].offset);
-    }
-    printf("\n");
+//    printf("the dict is\n");
+//    for (unsigned int i = 0; i < head.nums; i++){
+//        printf("{%llu,%u};",dict[i].key,dict[i].offset);
+//    }
+//    printf("\n");
     //写字符串内容
     outFile.write(str_data.c_str(),str_data.size());
-    printf("the string to write is :\n");
-    std::cout<<str_data<<std::endl;
+//    printf("the string to write is :\n");
+//    std::cout<<str_data<<std::endl;
 //    outFile.close();
 
-    std::cout<<"now the out end\n";
+//    std::cout<<"now the out end\n";
 
 //    //读测试开始
 //    {
@@ -145,8 +146,8 @@ std::string SSTable::read_from_file_by_key(std::ifstream & inFile, const uint64_
     read_from[length] = '\0';
 
 
-    printf("the data get is :\n");
-    std::cout<<read_from<<std::endl;
+//    printf("the data get is :\n");
+//    std::cout<<read_from<<std::endl;
 
     std::string res(read_from);
 
@@ -191,9 +192,16 @@ std::string SSTable::search(long long key){
     if (!blfter.Contains(key))
         return "";
     std::string res;
-    char *filename  = new char;
-    sprintf(filename,"data/level-%d/%d.sst",file_level,file_id);
-    std::ifstream inFile(filename,std::ios::in|std::ios::binary);
+    char buf[80];
+
+    sprintf(buf,"data/level-%d/%d.sst",file_level,file_id);
+    std::string filename(buf);
+    std::ifstream inFile(filename.c_str(),std::ios::in|std::ios::binary);
+    if (!inFile)
+    {
+        printf("Open file failed !\n");
+        return "";
+    }
     res = read_from_file_by_key(inFile,key);
     return res;
 }

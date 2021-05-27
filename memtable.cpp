@@ -10,30 +10,27 @@ int MemTable::insert(long long  key, const std::string &s){
         return -1;
     // 空间不足，插入失败,返回-1
     sl->insertNode(key,s);
-    len ++;
+    len = sl->len;  //因为此次insert可能是覆盖操作，所以直接用sl的len来更新MEMTable的len
+
     memory_remaining -= (length);
     memory_usage += (length);
     return 1;
 }
 
 std::string MemTable::search(long long  key){
-    SKNode_mem* get = sl->searchNode(key);
-    if (get == nullptr || *get->offset == D_str )
-        return "";
-    return *get->offset;
+//    SKNode_mem* get = sl->searchNode(key);
+    std::string res = sl->searchNode(key);
+    return res;
 }
 
 int MemTable::remove(long long  key){
-    uint32_t length = sl->deleteNode(key)+12;
+    uint32_t length = sl->deleteNode(key);
     if (length){//在这个里面删除成功，维护长度
         len--;
+        length += 12;
         memory_remaining += length;
         memory_usage -= length;
     }
-
-//    if (insert(key,D_str) == -1)
-//        return -1;  //特殊标识，标识插入deleted时满
-//    else
         return 1;
 }
 

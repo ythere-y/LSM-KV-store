@@ -14,7 +14,7 @@ Skip_List_mem::~Skip_List_mem(){
     delete head;
 }
 
-SKNode_mem* Skip_List_mem::searchNode(const  long long &key){
+std::string Skip_List_mem::searchNode(const  long long &key){
     SKNode_mem * cur = head;
     for (int i = listLevel;i>=0;i--){
         while(cur->forward[i]->key != LONG_LONG_MAX && cur->forward[i]->key < key)
@@ -23,9 +23,9 @@ SKNode_mem* Skip_List_mem::searchNode(const  long long &key){
     cur = cur->forward[0];
     if (cur->key == key)
     {
-        return cur;
+        return cur->offset;
     }
-    return nullptr;
+    return "";
 }
 
 int Skip_List_mem::insertNode(const long long &key,const std::string &s){
@@ -36,16 +36,8 @@ int Skip_List_mem::insertNode(const long long &key,const std::string &s){
             cur = cur->forward[i];
         }
         if (cur->forward[i]->key == key){   //如果找到一样的，就放弃
-            //TODO:有没有更好的不用重复insert的方法
-            if (*(cur->forward[i]->offset) == "~DELETED~")  //如果找到的是之前的删除标记
-            {
-                deleteNode(key);
-                insertNode(key,s);
-            }else{
-                cur->offset = &s;    //覆盖
-            }
+            cur->forward[i]->offset = s;    //覆盖
             return 1;
-
         }else{      //没有找到，就暂时将这一层入栈
             store.push(cur);
         }
@@ -71,8 +63,8 @@ int Skip_List_mem::insertNode(const long long &key,const std::string &s){
             head->forward.push_back(add);
             add->forward.push_back(end);
         }
-
     }
+
     return 1;
 }
 uint32_t Skip_List_mem::deleteNode(const long long &key){
@@ -94,7 +86,7 @@ uint32_t Skip_List_mem::deleteNode(const long long &key){
     int cur_level = 0;
     SKNode_mem *del = store.top()->forward[cur_level];//删除目标点
     SKNode_mem *change;
-    uint32_t res_len = del->offset->size();
+    uint32_t res_len = del->offset.size();
     while (!store.empty()) {
         change = store.top();
         change->forward[cur_level] = change->forward[cur_level]->forward[cur_level];
@@ -106,7 +98,6 @@ uint32_t Skip_List_mem::deleteNode(const long long &key){
         end->forward.pop_back();
         listLevel--;
     }   //删除多余的高度
-    delete del;
     return res_len;   //删除成功，返回被删除的string的长度
 }
 

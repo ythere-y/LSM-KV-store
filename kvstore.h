@@ -1,7 +1,6 @@
 #pragma once
 
 #include "kvstore_api.h"
-#include<io.h>
 
 #include "memtable.h"
 #include "sstable.h"
@@ -18,7 +17,8 @@ struct Level{   //对于每个层级，直接存储的内容只是SSTable的haea
 class KVStore : public KVStoreAPI {
 	// You can add your implementation here
 private:
-    const uint32_t mem_size = 32+10240+40;
+    const uint32_t mem_size = 2048*8;
+//    const uint32_t mem_size = 32+10240+40;
     uint64_t time_stamp_label;
     MemTable *mem;
     std::vector<Level*> levels;     //存储多个层级

@@ -4,10 +4,11 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <io.h>
 
 struct SKNode_mem{
     long long key;
-    const std::string * offset;
+    std::string offset;
     std::vector<SKNode_mem*> forward;
     SKNode_mem(){
         key = 0;
@@ -15,9 +16,9 @@ struct SKNode_mem{
     SKNode_mem(const long long &tar){
         key = tar;
     };
-    SKNode_mem(const long long &tar, const std::string &s){
+    SKNode_mem(const long long &tar,const std::string &s){
         key = tar;
-        offset = &s;
+        offset = s;
     }
 };
 
@@ -32,7 +33,7 @@ public:
 public:
     Skip_List_mem();
     ~Skip_List_mem();
-    SKNode_mem*searchNode(const long long &key);
+    std::string searchNode(const long long &key);
     int insertNode(const long long &key,const std::string &s);
     uint32_t deleteNode(const long long &key);
     void printList();

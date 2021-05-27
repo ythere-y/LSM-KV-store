@@ -61,8 +61,8 @@ int Skip_List::insertNode(const unsigned long long &key, const uint32_t &s){
             head->forward.push_back(add);
             add->forward.push_back(end);
         }
-
     }
+
     return 1;
 }
 int Skip_List::deleteNode(const unsigned long long &key){

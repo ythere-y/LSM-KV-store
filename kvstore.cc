@@ -30,7 +30,7 @@ KVStore::KVStore(const std::string &dir): KVStoreAPI(dir)
     mem = new MemTable(mem_size);
     time_stamp_label = 0;
     levels.push_back(new Level);
-    init_SSTables(dir);
+//    init_SSTables(dir);
 }
 
 void KVStore::init_SSTables(const std::string &dir){
@@ -103,7 +103,7 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const std::string &s)
 {
     if (mem->insert(key,s)==-1){                //如果插入成功，则返回0，插入失败则返回-1，进入特殊处理
-        printf("the key %lu insert to a new memtable\n",key);
+//        printf("the key %lu insert to a new memtable\n",key);
         uint64_t time = ++time_stamp_label;
         int name_id = levels[0]->heads_in_level.size();
         uint32_t level =0;
@@ -123,44 +123,55 @@ std::string KVStore::get(uint64_t key)
     std::string res = "";
     //先看看能不能在mem中直接找到
     res = mem->search(key);
-    if (!strcmp(res.c_str(),"") || !strcmp(res.c_str(),D_str.c_str()))
+    if (strcmp(res.c_str(),""))//如果mem查找结果不为
     {
-        return "";
-    }
-    //再去遍历level
-    //level-0特殊处理，要考虑时间戳
-    std::string tmp_res;
-    for (auto table:levels[0]->heads_in_level)
-    {
-        //时间戳由小到大，大的可以覆盖小的
-        tmp_res = table->search(key);
-        if (tmp_res != "")//找到了有用的数据
-        {   //进行覆盖
-            res = tmp_res;
-        }
-    }
-    //最后看res是否有数据，如果有，则直接返回
-    if (strcmp(res.c_str(),"")) //如果不是空
-    {
-        if (!strcmp(res.c_str(),D_str.c_str())) //如果结果被删除
-        {
+        if (!strcmp(res.c_str(),D_str.c_str()))
             return "";
-        }else return res;
+        else
+            return res;
     }
-
-    for (auto level = levels.begin()+1; level!= levels.end(); level++)
+    else
     {
-        //遍历level中的table
-        for (auto table:(*level)->heads_in_level)
+        if (!levels[0]->heads_in_level.size())
+            return "";
+        //再去遍历level
+        //level-0特殊处理，要考虑时间戳
+        std::string tmp_res("");
+
+        for (auto table:levels[0]->heads_in_level)
         {
-            res = table->search(key);
-            if (!strcmp(res.c_str(),D_str.c_str()))
-                return "";
-            else if (strcmp(res.c_str(),""))
-                return res;
+            //时间戳由小到大，大的可以覆盖小的
+            if (!table)
+                break;
+            tmp_res = table->search(key);
+            if (strcmp(tmp_res.c_str(),""))//找到了有用的数据
+            {   //进行覆盖
+                res = tmp_res;
+            }
         }
+        //最后看res是否有数据，如果有，则直接返回
+        if (strcmp(res.c_str(),"")) //如果不是空
+        {
+            if (!strcmp(res.c_str(),D_str.c_str())) //如果结果被删除
+            {
+                return "";
+            }else return res;
+        }
+
+        for (auto level = levels.begin()+1; level!= levels.end(); level++)
+        {
+            //遍历level中的table
+            for (auto table:(*level)->heads_in_level)
+            {
+                res = table->search(key);
+                if (!strcmp(res.c_str(),D_str.c_str()))
+                    return "";
+                else if (strcmp(res.c_str(),""))
+                    return res;
+            }
+        }
+        //遍历完成都没有找到res，默认返回""空字符串
     }
-    //遍历完成都没有找到res，默认返回""空字符串
     return "";
 }
 /**
@@ -169,7 +180,11 @@ std::string KVStore::get(uint64_t key)
  */
 bool KVStore::del(uint64_t key)
 {
-    mem->remove(key);
+    std::string res_get = get(key);
+    if (!strcmp(res_get.c_str(),""))   //如果查找结果为空，就直接返回失败
+        return false;
+//    mem->remove(key);
+
     put(key,D_str);
     return true;
 }
@@ -274,12 +289,17 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
 
     /** 专用检查迭代器是否到末尾的函数，及时用这个函数来更新num_list*/
     auto checkEnd = [&](){
-        for (auto i : num_list){
-            if (iter_list[i] == tar_list[i]->dict.end())
-            {
-                num_list.erase(i);
-            }
+        for (auto tail : num_list)
+        {
+            if (iter_list[tail] == tar_list[tail]->dict.end())
+                num_list.erase(tail);
         }
+//        for (auto tail = num_list.begin(); tail != num_list.end(); tail++){
+//            if (iter_list[*tail] == tar_list[*tail]->dict.end())
+//            {
+//                num_list.erase(tail);
+//            }
+//        }
     };
     for (int i = 0; i < len; i++)
         num_list.insert(i);
@@ -287,6 +307,7 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
         iter_list.push_back((*table).dict.begin());
     while(!num_list.empty())
     {
+        key_min = ULLONG_MAX;
         //遍历待选集合，找一个最小的key
         for (auto i : num_list)
         {
