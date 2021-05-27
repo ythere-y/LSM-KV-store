@@ -134,9 +134,12 @@ std::string SSTable::read_from_file_by_key(std::ifstream & inFile, const uint64_
     if ((++iter) != dict.end())   //如果不是最后一个
     {
         offset_end = (*iter).offset;   //可以找到结束点位
+    }else{                              //是最后一个
+        inFile.seekg(0,std::ios::end);
+        offset_end = inFile.tellg();
     }
     length = offset_end-offset_start;
-    inFile.seekg(32+10240+head.nums*12+offset_start,std::ios::cur);//依次跳过header、布隆过滤器、索引，再加上偏移量
+    inFile.seekg(32+10240+head.nums*12+offset_start,std::ios::beg);//依次跳过header、布隆过滤器、索引，再加上偏移量
     char read_from[length+1];
     inFile.read(read_from,length);
     read_from[length] = '\0';

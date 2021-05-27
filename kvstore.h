@@ -5,7 +5,9 @@
 
 #include "memtable.h"
 #include "sstable.h"
-
+#include <set>
+#include <queue>
+#include <map>
 struct Level{   //对于每个层级，直接存储的内容只是SSTable的haead
     std::vector<SSTable*> heads_in_level;      //存储这一层级中的head
     int size;
@@ -16,14 +18,18 @@ struct Level{   //对于每个层级，直接存储的内容只是SSTable的haea
 class KVStore : public KVStoreAPI {
 	// You can add your implementation here
 private:
+    const uint32_t mem_size = 32+10240+40;
+    uint64_t time_stamp_label;
     MemTable *mem;
+    std::vector<Level*> levels;     //存储多个层级
+    uint32_t cur_level = 0;         //记录目前层级数量
+
     uint32_t level_to_int(std::string level_name);
     uint32_t id_to_int(std::string id_name);
 
 //    SSTable *ss;
-    std::vector<Level*> levels;     //存储多个层级
-    int SS_write(SSTable * tar,int level);
     void recombination();
+    void compaction(std::vector<SSTable*> & tar_list,const uint32_t level);
 public:
 	KVStore(const std::string &dir);
 
@@ -37,5 +43,5 @@ public:
 
 	void reset() override;
 
-    void init_SSTables();
+    void init_SSTables(const std::string &dir);
 };
