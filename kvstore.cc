@@ -103,16 +103,11 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const std::string &s)
 {
     if (mem->insert(key,s)==-1){                //如果插入成功，则返回0，插入失败则返回-1，进入特殊处理
-//        printf("No error ~~\n");
-//        printf("the key %lu insert to a new memtable\n",key);
         uint64_t next_time = time_stamp_label++;
         int name_id = 0;
         name_id = levels[0]->heads_in_level.size();
-
-//        printf("no error\n");
         SSTable * add = new SSTable(mem,next_time,0,name_id);  //根据MEMTable创建一个新的SSTabel 的level为0
         levels[0]->heads_in_level.push_back(add);       //把这个新的直接放到level_0里面
-
         recombination();
         mem->reset();                           //mem重置
         put(key,s);                             //重新put一次
@@ -277,7 +272,7 @@ void KVStore::recombination(){
 
 void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level){
     int last_level = 0;             // 表示是最后一层的合并的标志，默认为0
-    if (level + 1  == cur_level)    // 目前是在最后一层进行的合并
+    if (level  == cur_level)    // 目前是在最后一层进行的合并
     {
         levels.push_back(new Level);    //加入新的一层
         last_level = 1;
@@ -293,17 +288,16 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
 
     /** 专用检查迭代器是否到末尾的函数，及时用这个函数来更新num_list*/
     auto checkEnd = [&](){
+        std::vector<int> delete_list;       // 一言不合就用vector
         for (auto tail : num_list)
         {
             if (iter_list[tail] == tar_list[tail]->dict.end())
-                num_list.erase(tail);
+                delete_list.push_back(tail);
         }
-//        for (auto tail = num_list.begin(); tail != num_list.end(); tail++){
-//            if (iter_list[*tail] == tar_list[*tail]->dict.end())
-//            {
-//                num_list.erase(tail);
-//            }
-//        }
+        for (auto del_index : delete_list)
+        {
+            num_list.erase(del_index);
+        }
     };
     for (int i = 0; i < len; i++)
         num_list.insert(i);
@@ -336,13 +330,13 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
         }
 
         std::string tmp_val = tar_list[i_min]->search(key_min); //去对应的table中找到string
-        printf("insert : key = %lu, val = %s",key_min,tmp_val.c_str());
-        if (last_level && strcmp(tmp_val.c_str(),"~DELETED~"))     // 如果是最后一层的操作，且检查到了delete标志，则跳过insert操作
+//        printf("insert : key = %lu, val = %s",key_min,tmp_val.c_str());
+        if (last_level && !strcmp(tmp_val.c_str(),"~DELETED~"))     // 如果是最后一层的操作，且检查到了delete标志，则跳过insert操作
         {
         }else if(com_mem->insert(key_min,tmp_val)==-1)                       //插入这个找到的对
         {   //如果插入导致溢满
-            printf("create new sstable in compaction\n");
-            time = ++time_stamp_label;
+//            printf("create new sstable in compaction\n");
+            time = time_stamp_label++;
             name_id = levels[level+1]->heads_in_level.size();
             SSTable * add = new SSTable(com_mem,time,level+1,name_id);
             levels[level+1]->heads_in_level.push_back(add);
@@ -353,19 +347,23 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
         checkEnd();
         //最后所有下标从集合中删除，循环结束
     }
-    //加入最后一个
-    time = ++time_stamp_label;
-    name_id = levels[level+1]->heads_in_level.size();
-    SSTable * last_one = new SSTable(com_mem,time,level+1,name_id);
-    levels[level+1]->heads_in_level.push_back(last_one);
+    if (com_mem->len)
+    {
+        //加入最后一个
+        time = time_stamp_label++;
+        name_id = levels[level+1]->heads_in_level.size();
+        SSTable * last_one = new SSTable(com_mem,time,level+1,name_id);
+        levels[level+1]->heads_in_level.push_back(last_one);
+    }
     /** 至此，前面的合并完成，收拾残局 */
     for (auto table : tar_list)
     {
+        table->reset(); //顺带删除原有文件
         delete table;
     }
     delete com_mem;
     // 准备下一层的迭代
-    int next_len = levels[level+1]->heads_in_level.size() - (1 >> (level+2));   //计算下一层多出来的table的数量
+    int next_len = levels[level+1]->heads_in_level.size() - (1 << (level+2));   //计算下一层多出来的table的数量
     if (next_len <= 0)  //如果没有多出来的table，则不需要进行迭代
     {return;}
     else {              //有多出来的table，需要找出其中时间戳最小的len个

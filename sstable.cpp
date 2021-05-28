@@ -21,16 +21,17 @@ SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level, uint32_t id)
     uint32_t pos = 0;
     long long tmp_max = LONG_LONG_MIN;
     long long tmp_min = LONG_LONG_MAX;
+
     while(p->key != LONG_LONG_MAX)
     {
         //更新最大值
         tmp_max = p->key > tmp_max ? p->key : tmp_max;
         //更新最小值
         tmp_min = p->key < tmp_min ? p->key : tmp_min;
+        pos += p->offset.size();                            //索引点向后移动
         Dict add_dict = Dict(p->key,pos);
-        dict.push_back(add_dict);                   //索引更新
+        dict.push_back(add_dict);                           //索引更新，索引记录的是终点
         blfter.Add(p->key);                                 //布隆过滤器同步更新
-        pos += p->offset.size();                           //索引点向后移动
         strcat(combine_str,p->offset.c_str());
 
 //        if (p->key == LONG_LONG_MAX)
@@ -145,13 +146,12 @@ std::string SSTable::read_from_file_by_key(std::ifstream & inFile, const uint64_
     {
         return "";
     }
-    offset_start = (*iter).offset;//确定要找的数据对应的偏移量
-    if ((++iter) != dict.end())   //如果不是最后一个
+    offset_end = (*iter).offset;    //确定要找的数据对应的终点
+    if (iter != dict.begin())     //如果不是第一个
     {
-        offset_end = (*iter).offset;   //可以找到结束点位
-    }else{                              //是最后一个
-        inFile.seekg(0,std::ios::end);
-        offset_end = inFile.tellg();
+        offset_start = (*(iter-1)).offset;   //可以找到结束点位
+    }else{                              //是第一个
+        offset_start = 0;
     }
     int gap = offset_end-offset_start;
     length = gap > 0 ? gap : 0;

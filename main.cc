@@ -15,7 +15,7 @@ private:
 
 	void regular_test(uint64_t max)
 	{
-        max = 40;
+        max = 100;
 		uint64_t i;
 
 		// Test a single key
