@@ -7,6 +7,7 @@
 #include <set>
 #include <queue>
 #include <map>
+#include <io.h>
 struct Level{   //对于每个层级，直接存储的内容只是SSTable的haead
     std::vector<SSTable*> heads_in_level;      //存储这一层级中的head
     int size;

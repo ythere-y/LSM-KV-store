@@ -7,7 +7,7 @@ class BloomFilter
 public:
     BitMap bitmap;
     BloomFilter(){};
-    ~BloomFilter(){};
+//    ~BloomFilter(){};
     void Add(const long long &tar);
     bool Contains(const long long &tar);
 };

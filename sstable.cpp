@@ -8,28 +8,42 @@ SSTable::SSTable()
 /*
  * 用一个Memtable来初始化SSTable,需要记录的是header、布隆过滤器、索引区，stringdata不记录，直接写入文件
  */
-SSTable::SSTable(MemTable * m,uint64_t &_time,uint32_t level, uint32_t id)
+SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level, uint32_t id)
 {
+//    printf("get the args : time = %llu, level = %d, id = %d\n",_time,level,id);
     file_id = id;
     file_level = level;
     head.time_stamp = _time;    //记录时间戳
     head.nums = m->size();      //数量记载
     SKNode_mem *p = m->sl->head->forward[0];    //第一个
     std::string str_data;
+    char combine_str[20000];
     uint32_t pos = 0;
-    for (uint32_t i = 0 ;i < m->size();i++)
+    long long tmp_max = LONG_LONG_MIN;
+    long long tmp_min = LONG_LONG_MAX;
+    while(p->key != LONG_LONG_MAX)
     {
-        head.max = p->key > head.max ? p->key : head.max;   //更新最大值
-        head.min = p->key < head.min ? p->key : head.min;   //更新最小值
-        dict.push_back(Dict(p->key,pos));                   //索引更新
+        //更新最大值
+        tmp_max = p->key > tmp_max ? p->key : tmp_max;
+        //更新最小值
+        tmp_min = p->key < tmp_min ? p->key : tmp_min;
+        Dict add_dict = Dict(p->key,pos);
+        dict.push_back(add_dict);                   //索引更新
         blfter.Add(p->key);                                 //布隆过滤器同步更新
         pos += p->offset.size();                           //索引点向后移动
-        str_data += (p->offset);                               //data就是存储的string
+        strcat(combine_str,p->offset.c_str());
+
+//        if (p->key == LONG_LONG_MAX)
+//            break;
         p = p->forward[0];
-    }
+  }
+    head.max = tmp_max;
+    head.min = tmp_min;
+    str_data = combine_str;
     //生成一个SSTable之后就写入到硬盘
-    char*filename = new char;
-    sprintf( filename,"data/level-%d/%d.sst",level,id);
+    char tmp_buf[80];
+    sprintf(tmp_buf,"data/level-%d/%d.sst",level,id);
+    std::string filename(tmp_buf);
     std::ofstream outFile(filename,std::ios::out|std::ios::binary);
     write_to_file(outFile, str_data);
     outFile.close();
@@ -139,7 +153,8 @@ std::string SSTable::read_from_file_by_key(std::ifstream & inFile, const uint64_
         inFile.seekg(0,std::ios::end);
         offset_end = inFile.tellg();
     }
-    length = offset_end-offset_start;
+    int gap = offset_end-offset_start;
+    length = gap > 0 ? gap : 0;
     inFile.seekg(32+10240+head.nums*12+offset_start,std::ios::beg);//依次跳过header、布隆过滤器、索引，再加上偏移量
     char read_from[length+1];
     inFile.read(read_from,length);

@@ -4,7 +4,8 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
-#include <io.h>
+//#include <io.h>
+#include <string.h>
 
 struct SKNode_mem{
     long long key;

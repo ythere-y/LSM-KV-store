@@ -103,12 +103,16 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const std::string &s)
 {
     if (mem->insert(key,s)==-1){                //如果插入成功，则返回0，插入失败则返回-1，进入特殊处理
+//        printf("No error ~~\n");
 //        printf("the key %lu insert to a new memtable\n",key);
-        uint64_t time = ++time_stamp_label;
-        int name_id = levels[0]->heads_in_level.size();
-        uint32_t level =0;
-        SSTable * add = new SSTable(mem,time,level,name_id);  //根据MEMTable创建一个新的SSTabel 的level为0
+        uint64_t next_time = time_stamp_label++;
+        int name_id = 0;
+        name_id = levels[0]->heads_in_level.size();
+
+//        printf("no error\n");
+        SSTable * add = new SSTable(mem,next_time,0,name_id);  //根据MEMTable创建一个新的SSTabel 的level为0
         levels[0]->heads_in_level.push_back(add);       //把这个新的直接放到level_0里面
+
         recombination();
         mem->reset();                           //mem重置
         put(key,s);                             //重新put一次
@@ -183,7 +187,7 @@ bool KVStore::del(uint64_t key)
     std::string res_get = get(key);
     if (!strcmp(res_get.c_str(),""))   //如果查找结果为空，就直接返回失败
         return false;
-//    mem->remove(key);
+    mem->remove(key);
 
     put(key,D_str);
     return true;

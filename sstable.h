@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <climits>
 struct Header{
     uint64_t time_stamp = 0;
     uint64_t nums = 0;
@@ -39,7 +40,6 @@ public:
 public:
     SSTable();
     SSTable(MemTable *m,uint64_t &_time,uint32_t level, uint32_t id);
-    SSTable(std::string & s);
     void reset();
     std::string search(long long key);
 };
