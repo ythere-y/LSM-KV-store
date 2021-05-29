@@ -12,8 +12,8 @@ class CorrectnessTest : public Test
 {
 private:
     const uint64_t SIMPLE_TEST_MAX = 512;
-    const uint64_t LARGE_TEST_MAX = 1024 * 2;
-    //    const uint64_t LARGE_TEST_MAX = 1024 * 64;
+//    const uint64_t LARGE_TEST_MAX = 1024 * 2;
+    const uint64_t LARGE_TEST_MAX = 1024 * 64;
 
     void regular_test(uint64_t max)
     {
@@ -40,31 +40,28 @@ private:
         }
         phase();
 
-        printf("special test  i = 0\n ");
-        EXPECT(std::string(1, 's'), store.get(0));
-        phase();
+//        printf("special test  i = 0\n ");
+//        EXPECT(std::string(1, 's'), store.get(0));
+//        phase();
 
         // Test after all insertions
-        //        for (i = 0; i < max; ++i)
-        ////            EXPECT(std::string(i*10+1, 's'), store.get(i));
-        //            EXPECT(std::string(i+1, 's'), store.get(i));
-        //        phase();
+                for (i = 0; i < max; ++i)
+        //            EXPECT(std::string(i*10+1, 's'), store.get(i));
+                    EXPECT(std::string(i+1, 's'), store.get(i));
+                phase();
 
-        //        // Test deletions
-        //        for (i = 0; i < max; i+=2)
-        //        {
-        //            if (i >= 95)
-        //                EXPECT(true, store.del(i));
-        //            else
-        //                EXPECT(true, store.del(i));
+                // Test deletions
+                for (i = 0; i < max; i+=2)
+                {
+                    EXPECT(true, store.del(i));
 
-        //        }
-        //        for (i = 0; i < max; ++i)
-        ////            EXPECT((i & 1) ? std::string(i*10+1, 's') : not_found,store.get(i));
-        //            EXPECT((i & 1) ? std::string(i+1, 's') : not_found,store.get(i));
+                }
+                for (i = 0; i < max; ++i)
+        //            EXPECT((i & 1) ? std::string(i*10+1, 's') : not_found,store.get(i));
+                    EXPECT((i & 1) ? std::string(i+1, 's') : not_found,store.get(i));
 
-        //        for (i = 1; i < max; ++i)
-        //            EXPECT(i & 1, store.del(i));
+                for (i = 1; i < max; ++i)
+                    EXPECT(i & 1, store.del(i));
 
         phase();
 
@@ -81,14 +78,15 @@ public:
         if (args == NULL)
             args = NULL;
         std::cout << "KVStore Correctness Test" << std::endl;
+        store.reset();
 
-        //        std::cout << "[Simple Test]" << std::endl;
-        //        regular_test(SIMPLE_TEST_MAX);
-                store.reset();
+        std::cout << "[Simple Test]" << std::endl;
+        regular_test(SIMPLE_TEST_MAX);
+        store.reset();
 
         std::cout << "[Large Test]" << std::endl;
         regular_test(LARGE_TEST_MAX);
-        //        store.reset();
+        store.reset();
     }
 };
 

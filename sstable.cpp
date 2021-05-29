@@ -86,8 +86,6 @@ void SSTable::write_to_file(std::ofstream &outFile, std::string & str_data){
         outFile.write((char*)&(dict[i].key),8);
         outFile.write((char*)&(dict[i].offset),4);
     }
-//    printf("\n");
-//    outFile.write((char*)&(dict),head.nums*12);
 
     ///写字符串内容
     outFile.write(str_data.c_str(),str_data.size());

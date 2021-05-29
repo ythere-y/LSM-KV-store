@@ -45,7 +45,7 @@ void KVStore::init_SSTables(const std::string &dir){
             printf("init by the file [%s]\n",file_p.c_str());
         }
     }
-
+/*
 //    long hFile = 0, in_hFile = 0;
 //    struct _finddata_t fileinfo, in_fileinfo;
 //    std::string p;
@@ -103,6 +103,7 @@ void KVStore::init_SSTables(const std::string &dir){
 //        printf("success to read %d files to init SSTables\n",count);
 //    else
 //        printf("no files to read for initations\n");
+*/
 }
 
 KVStore::~KVStore()
@@ -335,6 +336,7 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
 //        printf("insert : key = %lu, val = %s",key_min,tmp_val.c_str());
         if (last_level && !strcmp(tmp_val.c_str(),"~DELETED~"))     // 如果是最后一层的操作，且检查到了delete标志，则跳过insert操作
         {
+            printf("deleted node\n");
         }else if(com_mem->insert(key_min,tmp_val)==-1)                       //插入这个找到的对
         {   //如果插入导致溢满
 //            printf("create new sstable in compaction\n");
