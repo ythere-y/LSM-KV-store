@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <string>
 
-class KVStoreAPI {
+class KVStoreAPI
+{
 public:
 	/**
 	 * You should put all sstables under `dir`.
@@ -11,7 +12,13 @@ public:
 	 * there. Please refer to the c++ filesystem library
 	 * (https://en.cppreference.com/w/cpp/filesystem).
 	 */
-	KVStoreAPI(const std::string &dir) { }
+	KVStoreAPI(const std::string &dir)
+	{
+		if (dir.size())
+			return;
+		else
+			return;
+	}
 	KVStoreAPI() = delete;
 
 	/**
@@ -38,4 +45,3 @@ public:
 	 */
 	virtual void reset() = 0;
 };
-

@@ -1,12 +1,16 @@
+CXX = g++
+CXXFLAGS = -Wall  -Wextra -pedantic -std=c++17 -g -fsanitize=address
+LDFLAGS =  -fsanitize=address
 
-LINK.o = $(LINK.cc)
-CXXFLAGS = -std=c++14 -Wall
+SRC = correctness.cc kvstore.cc main.cc persistence.cc
+OBJ = $(SRC:.cc=.o)
+EXEC = main
 
-all: correctness persistence
+all: $(EXEC)
 
-correctness: kvstore.o correctness.o
-
-persistence: kvstore.o persistence.o
+$(EXEC): $(OBJ)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJ) $(LBLIBS)
 
 clean:
-	-rm -f correctness persistence *.o
+	rm -rf $(OBJ) $(EXEC)
+

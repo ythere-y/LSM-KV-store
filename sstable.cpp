@@ -8,16 +8,15 @@ SSTable::SSTable()
 /*
  * 用一个Memtable来初始化SSTable,需要记录的是header、布隆过滤器、索引区，stringdata不记录，直接写入文件
  */
-SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level, uint32_t id)
+SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level)
 {
 //    printf("get the args : time = %llu, level = %d, id = %d\n",_time,level,id);
-    file_id = id;
+    file_id = _time;
     file_level = level;
     head.time_stamp = _time;    //记录时间戳
     head.nums = m->size();      //数量记载
     SKNode_mem *p = m->sl->head->forward[0];    //第一个
     std::string str_data;
-    char combine_str[20000];
     uint32_t pos = 0;
     long long tmp_max = LONG_LONG_MIN;
     long long tmp_min = LONG_LONG_MAX;
@@ -28,25 +27,50 @@ SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level, uint32_t id)
         tmp_max = p->key > tmp_max ? p->key : tmp_max;
         //更新最小值
         tmp_min = p->key < tmp_min ? p->key : tmp_min;
+
         pos += p->offset.size();                            //索引点向后移动
         Dict add_dict = Dict(p->key,pos);
         dict.push_back(add_dict);                           //索引更新，索引记录的是终点
         blfter.Add(p->key);                                 //布隆过滤器同步更新
-        strcat(combine_str,p->offset.c_str());
+        str_data += p->offset.c_str();
+        if (p->key == 0)
+        {
+            printf("in trans secton key = 0 ");
+            printf("offset = %d ",pos);
+            printf("data = %s ",p->offset.c_str());
+            printf("\n");
+            printf("in trans section the dic get is {%llu,%d}\n",dict[0].key,dict[0].offset);
+            printf("in trans section the data is : %s\n",str_data.c_str());
+            printf("in trans section the nums is %llu\n",head.nums);
+            printf("in trans section the level = %d, the id = %llu\n",file_level,file_id);
 
-//        if (p->key == LONG_LONG_MAX)
-//            break;
+        }
+        if (p->key == LONG_LONG_MAX)
+            break;
         p = p->forward[0];
   }
     head.max = tmp_max;
     head.min = tmp_min;
-    str_data = combine_str;
+//    str_data = combine_str;
     //生成一个SSTable之后就写入到硬盘
     char tmp_buf[80];
-    sprintf(tmp_buf,"data/level-%d/%d.sst",level,id);
+    char tmp_dir_buf[80];
+    fflush(stdout);
+
+
+    sprintf(tmp_dir_buf,"data/level-%d",level);
+    sprintf(tmp_buf,"data/level-%d/%llu.sst",level,file_id);
+
     std::string filename(tmp_buf);
+    std::string dirname(tmp_dir_buf);
+    // 先检查文件目录是否存在，如果不存在就创建一个
+    if (access(dirname.c_str(),F_OK)!=0)
+    {
+        mkdir(dirname.c_str());
+    }
     std::ofstream outFile(filename,std::ios::out|std::ios::binary);
     write_to_file(outFile, str_data);
+
     outFile.close();
 }
 void SSTable::write_to_file(std::ofstream &outFile, std::string & str_data){
@@ -56,25 +80,15 @@ void SSTable::write_to_file(std::ofstream &outFile, std::string & str_data){
     //写布隆过滤器
     memcpy(buff,blfter.bitmap.bitmap,10240);
     outFile.write(buff,10240);
-//    printf("test of the yuan bitmap :\n");
-//    printf("test 1 : %d\n",blfter.Contains(1));
-//    printf("test 3 : %d\n",blfter.Contains(3));
-//    printf("test 5 : %d\n",blfter.Contains(5));
     //写索引区
     outFile.write((char*)&(dict),head.nums*12);
-//    printf("the dict is\n");
-//    for (unsigned int i = 0; i < head.nums; i++){
-//        printf("{%llu,%u};",dict[i].key,dict[i].offset);
-//    }
-//    printf("\n");
+
     //写字符串内容
     outFile.write(str_data.c_str(),str_data.size());
-//    printf("the string to write is :\n");
-//    std::cout<<str_data<<std::endl;
-//    outFile.close();
 
-//    std::cout<<"now the out end\n";
 
+    int len = str_data.size();
+    printf("in write section the size is %d\n",len);
 //    //读测试开始
 //    {
 //    std::cout<<"now start the read\n";
@@ -101,8 +115,8 @@ void SSTable::write_to_file(std::ofstream &outFile, std::string & str_data){
 //        printf("{%llu,%u};",read_test->dict[i].key,read_test->dict[i].offset);
 //    }
 //    printf("\n");
-//    //读字符串数据
-//    char read_from[12];
+    //读字符串数据
+//    char read_from[2];
 //    inFile.seekg(11,std::ios::cur);
 //    inFile>>read_from;
 //    read_from[11] = '\0';
@@ -124,7 +138,7 @@ void SSTable::read_from_file(std::ifstream &file,const uint32_t level,const uint
     file_level = level;
     file_id  = id;
     char buff[10240];
-    printf("ready to read from file to fill the ssTable, the level is %d; the id is %d\n",file_level,file_id);
+    printf("in read section ready to read from file to fill the ssTable, the level is %d; the id is %llu\n",file_level,file_id);
     //读header
     file.read((char*)&(head),32);
     //读布隆过滤器
@@ -147,24 +161,42 @@ std::string SSTable::read_from_file_by_key(std::ifstream & inFile, const uint64_
         return "";
     }
     offset_end = (*iter).offset;    //确定要找的数据对应的终点
+
     if (iter != dict.begin())     //如果不是第一个
     {
         offset_start = (*(iter-1)).offset;   //可以找到结束点位
     }else{                              //是第一个
         offset_start = 0;
     }
+    if (key == 0){
+        uint64_t num_test = 0;
+        char test[4];
+        memset(test,0,sizeof(char)*3);
+        printf("in read secton the level = %d, id = %llu\n",file_level,file_id);
+        printf("in read secton the start = %d, the end = %d\n",offset_start,offset_end);
+        inFile.read((char*)&num_test,8);
+        inFile.seekg(32+10240+head.nums*12);
+        inFile.read(test,3);
+        test[3] = '\0';
+        printf("in read secton the test = %s\n",test);
+        printf("in read section the num_test = %llu\n" ,num_test);
+    }
     int gap = offset_end-offset_start;
     length = gap > 0 ? gap : 0;
     inFile.seekg(32+10240+head.nums*12+offset_start,std::ios::beg);//依次跳过header、布隆过滤器、索引，再加上偏移量
     char read_from[length+1];
+    memset(read_from,0,sizeof(char)*(length+1));
     inFile.read(read_from,length);
     read_from[length] = '\0';
-
 
 //    printf("the data get is :\n");
 //    std::cout<<read_from<<std::endl;
 
     std::string res(read_from);
+    if (key == 0)
+        printf("in read section the read_from = %s\n",read_from);
+    if (key == 0)
+        printf("in read seciont the res = %s\n",res.c_str());
 
     inFile.close();
     fflush(stdout);
@@ -199,6 +231,11 @@ void SSTable::reset(){
     head.max = LONG_LONG_MIN;
     head.min = LONG_LONG_MAX;
     dict.resize(0);
+    //删除对应的文件
+    char buf[80];
+    sprintf(buf,"data/level-%d/%llu.sst",file_level,file_id);
+//    printf("try to delete file : %s \n",buf);
+    utils::rmfile(buf);
     return;
 }
 std::string SSTable::search(long long key){
@@ -206,15 +243,16 @@ std::string SSTable::search(long long key){
         return "";
     if (!blfter.Contains(key))
         return "";
-    std::string res;
+    std::string res = "";
     char buf[80];
+    memset(buf,0,sizeof(char)*80);
 
-    sprintf(buf,"data/level-%d/%d.sst",file_level,file_id);
+    sprintf(buf,"data/level-%d/%llu.sst",file_level,file_id);
     std::string filename(buf);
     std::ifstream inFile(filename.c_str(),std::ios::in|std::ios::binary);
     if (!inFile)
     {
-        printf("Open file failed !\n");
+        printf("Open file failed ! level = %d, id = %llu\n",file_level,file_id);
         return "";
     }
     res = read_from_file_by_key(inFile,key);

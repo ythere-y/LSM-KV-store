@@ -1,11 +1,13 @@
 #ifndef SSTABLE_H
 #define SSTABLE_H
 #include <stdio.h>
+//#include <io.h>
 #include "memtable.h"
 #include "bloomfilter.h"
 #include <fstream>
 #include <iostream>
 #include <string>
+#include "utils.h"
 #include <climits>
 struct Header{
     uint64_t time_stamp = 0;
@@ -25,7 +27,7 @@ struct Dict{
 class SSTable
 {
 public:
-    uint32_t file_id = 0;
+    uint64_t file_id = 0;
     uint32_t file_level = 0;
     Header head;
     BloomFilter blfter;
@@ -39,7 +41,7 @@ public:
 
 public:
     SSTable();
-    SSTable(MemTable *m,uint64_t &_time,uint32_t level, uint32_t id);
+    SSTable(MemTable *m,uint64_t &_time,uint32_t level);
     void reset();
     std::string search(long long key);
 };

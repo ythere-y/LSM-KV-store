@@ -7,7 +7,8 @@
 #include <set>
 #include <queue>
 #include <map>
-#include <io.h>
+//#include <io.h>
+//#include <direct.h>
 struct Level{   //对于每个层级，直接存储的内容只是SSTable的haead
     std::vector<SSTable*> heads_in_level;      //存储这一层级中的head
     int size;
@@ -18,8 +19,8 @@ struct Level{   //对于每个层级，直接存储的内容只是SSTable的haea
 class KVStore : public KVStoreAPI {
 	// You can add your implementation here
 private:
-//    const uint32_t mem_size =  2*1024*1024;
-    const uint32_t mem_size = 2*1024*8;
+    const uint32_t mem_size =  2*1024*1024;
+//    const uint32_t mem_size = 2*1024*8;
 //    const uint32_t mem_size = 32+10240+40;
     uint64_t time_stamp_label;
     MemTable *mem;

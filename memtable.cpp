@@ -22,7 +22,8 @@ int MemTable::insert(long long  key, const std::string &s){
 
 std::string MemTable::search(long long  key){
 //    SKNode_mem* get = sl->searchNode(key);
-    std::string res = sl->searchNode(key);
+    std::string res = "";
+    res = sl->searchNode(key);
     return res;
 }
 
