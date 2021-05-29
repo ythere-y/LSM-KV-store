@@ -21,14 +21,14 @@ private:
         uint64_t i;
 
         // Test a single key
-        EXPECT(not_found, store.get(1));
-        store.put(1, "SE");
-        EXPECT("SE", store.get(1));
-        EXPECT(true, store.del(1));
-        EXPECT(not_found, store.get(1));
-        EXPECT(false, store.del(1));
+//        EXPECT(not_found, store.get(1));
+//        store.put(1, "SE");
+//        EXPECT("SE", store.get(1));
+//        EXPECT(true, store.del(1));
+//        EXPECT(not_found, store.get(1));
+//        EXPECT(false, store.del(1));
 
-        phase();
+//        phase();
 
         // Test multiple key-value pairs
         for (i = 0; i < max; ++i)
@@ -84,7 +84,7 @@ public:
 
         //        std::cout << "[Simple Test]" << std::endl;
         //        regular_test(SIMPLE_TEST_MAX);
-        //        store.reset();
+                store.reset();
 
         std::cout << "[Large Test]" << std::endl;
         regular_test(LARGE_TEST_MAX);

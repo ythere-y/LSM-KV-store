@@ -142,13 +142,13 @@ std::string KVStore::get(uint64_t key)
     }
     else
     {
-        if (key == 0)
-            printf("********* in get section fail to find in mem\n");
+//        if (key == 0)
+//            printf("********* in get section fail to find in mem\n");
 
 //        if (!levels[0]->heads_in_level.size())
 //            return "";
-        if(key == 0)
-            printf("********get there\n");
+//        if(key == 0)
+//            printf("********get there\n");
         fflush(stdout);
         //再去遍历level
         //level-0特殊处理，要考虑时间戳
