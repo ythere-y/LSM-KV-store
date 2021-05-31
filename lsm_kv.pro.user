@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.14.2, 2021-05-29T21:00:24. -->
+<!-- Written by QtCreator 4.14.2, 2021-05-31T18:46:09. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -296,7 +296,7 @@
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:D:/04-2021Spring/code/high/project2_LSM-KV/lsm_kv/lsm_kv.pro</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/04-2021Spring/code/high/project2_LSM-KV/lsm_kv/lsm_kv.pro</value>
-    <value type="QString" key="RunConfiguration.Arguments">-v</value>
+    <value type="QString" key="RunConfiguration.Arguments">-v -t</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>

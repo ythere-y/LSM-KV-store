@@ -33,7 +33,7 @@ void KVStore::dirname_to_num(std::string &dirname, std::string &filename, uint32
     std::string str_id = filename.substr(0,len-4);
     level = std::atoi(str_level.c_str());
     id = std::atoi(str_id.c_str());
-    printf("get level = %u, id = %u\n",level,id);
+//    printf("get level = %u, id = %u\n",level,id);
 }
 
 
@@ -79,6 +79,7 @@ void KVStore::init_SSTables(){
                 fflush(stdout);
             }
         }
+        file_list.clear();
     }
     printf("read %d file to init table\n",count);
 }
@@ -201,11 +202,22 @@ void KVStore::reset()
     //接下来删除所有目录
     std::string p;
     std::vector<std::string> dir_list;
-    utils::scanDir("data",dir_list);
-    for (auto dir : dir_list)
+    utils::scanDir(dir.c_str(),dir_list);
+    for (auto dir_p : dir_list)
     {
-        utils::rmdir(dir.c_str());
+        utils::rmdir(p.assign(dir).append("/").append(dir_p).c_str());
     }
+    dir_list.clear();
+
+    for (auto level:levels)
+    {
+        level->heads_in_level.clear();
+    }
+    levels.clear();
+    levels.push_back(new Level);
+    cur_level = 0;
+
+
     return;
 }
 /** 检查level的数量，并且进行重组 */
@@ -225,14 +237,14 @@ void KVStore::recombination(){
         levels[0]->heads_in_level.clear();      // level-0的table全部清除
         if (cur_level>=1)//如果有第1层
         {
-            for (auto table = levels[1]->heads_in_level.begin(); table!= levels[1]->heads_in_level.end(); table++)
+            for (auto table = levels[1]->heads_in_level.begin(); table!= levels[1]->heads_in_level.end();)
             {
                 //如果范围无交集，直接跳过
                 if ((*table)->head.min > tmp_max || (*table)->head.max < tmp_min)
-                    continue;
+                    table++;
                 else{
                     recombineList.push_back(*table);//加入需要合并的列表
-                    levels[1]->heads_in_level.erase(table); //从原来的level中删除
+                    table = levels[1]->heads_in_level.erase(table); //删除这个节点，并且自动返回下一个，这样保证不会漏
                 }
             }
         }
@@ -266,17 +278,24 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
             if (iter_list[tail] == tar_list[tail]->dict.end())
                 delete_list.push_back(tail);
         }
+        if (delete_list.empty())
+            return false;   // 如果没有删除，那么就返回false
         for (auto del_index : delete_list)
         {
             num_list.erase(del_index);
         }
+        return true;        // 如果进行了删除操作，那么就返回true
     };
-    // 填充下标的vector
-    for (int i = 0; i < len; i++)
-        num_list.insert(i);
-    // 准备好迭代器
+    // 准备好迭代器和下标记录器
+    int index = 0;
     for (auto table: tar_list)
-        iter_list.push_back((*table).dict.begin());
+    {
+        if (table->head.nums)   //必须检查是否是空SSTable
+        {
+            iter_list.push_back((*table).dict.begin());
+            num_list.insert(index++);
+        }
+    }
     // 归并的循环
     while(!num_list.empty())
     {
@@ -290,11 +309,13 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
                 if (tar_list[i]->head.time_stamp < tar_list[i_min]->head.time_stamp)
                 {
                     iter_list[i]++;
-                    checkEnd();
+                    if (checkEnd())     // 每个checkEnd之后，如果删除了，就需要退出循环重新进入
+                        break;
                 }else
                 {
                     iter_list[i_min]++;
-                    checkEnd();
+                    if (checkEnd())
+                        break;
                     i_min = i;
                 }
             }else if (tmp < key_min)
@@ -306,10 +327,6 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
 
         std::string tmp_val = tar_list[i_min]->search(key_min); //去对应的table中找到string
 
-        if (key_min == 0)
-        {
-            printf("in compaction, the key = %lu, the val = %s\n",key_min, tmp_val.c_str());
-        }
 //        printf("insert : key = %lu, val = %s",key_min,tmp_val.c_str());
         if (last_level && !strcmp(tmp_val.c_str(),"~DELETED~"))     // 如果是最后一层的操作，且检查到了delete标志，则跳过insert操作
         {
@@ -366,18 +383,17 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
                 next_tmp_max = cur->head.max > next_tmp_max ? cur->head.max : next_tmp_max;
                 next_table_list.push_back(cur);
                 // 之后从这一层中删除
-                levels[level+1]->heads_in_level.erase(iter_list);
+                iter_list = levels[level+1]->heads_in_level.erase(iter_list);   //自动返回删除结点的下一个
             }
+
             // 加入下层与范围有交集的table
-            for (auto table = levels[level+2]->heads_in_level.begin(); table!=levels[level+2]->heads_in_level.end(); table++)
+            for (auto table = levels[level+2]->heads_in_level.begin(); table!=levels[level+2]->heads_in_level.end();)
             {
                 if ((*table)->head.min > next_tmp_max || (*table)->head.max < next_tmp_min)
-                    continue;   // 逃过一杰
+                    table++;   // 逃过一杰
                 else {
-                    // 加入列表
-                    next_table_list.push_back(*table);
-                    // 在原来的位置删除
-                    levels[level+2]->heads_in_level.erase(table);
+                    next_table_list.push_back(*table);// 加入列表
+                    table = levels[level+2]->heads_in_level.erase(table);   //准备删除
                 }
             }
         }else{  //没有下层，则可以省去范围的维护
@@ -387,7 +403,7 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
                 SSTable * cur = *iter_list;
                 next_table_list.push_back(cur);
                 // 之后从这一层中删除
-                levels[level+1]->heads_in_level.erase(iter_list);
+                iter_list = levels[level+1]->heads_in_level.erase(iter_list);
             }
         }
         // 调用递归

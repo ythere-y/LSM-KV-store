@@ -168,7 +168,7 @@ void SSTable::read_from_file(std::ifstream &file,const uint32_t level,const uint
     file_level = level;
     file_id  = id;
     char buff[10240];
-    printf("in read section ready to read from file to fill the ssTable, the level is %d; the id is %llu\n",file_level,file_id);
+//    printf("in read section ready to read from file to fill the ssTable, the level is %d; the id is %llu\n",file_level,file_id);
     ///读header
     file.read((char*)&(head),32);
     ///读布隆过滤器
@@ -182,7 +182,7 @@ void SSTable::read_from_file(std::ifstream &file,const uint32_t level,const uint
         file.read((char*)&(dict[i].key),8);
         file.read((char*)&(dict[i].offset),4);
     }
-    return ;
+    return;
 }
 /*
  * 在已经有基础SSTable的情况下查询某个key对应的val
@@ -274,7 +274,7 @@ std::string SSTable::search(long long key){
     std::ifstream inFile(filename.c_str(),std::ios::in|std::ios::binary);
     if (!inFile)
     {
-        printf("Open file failed ! level = %d, id = %llu\n",file_level,file_id);
+        printf("in search Open file failed ! level = %d, id = %llu\n",file_level,file_id);
         return "";
     }
     res = read_from_file_by_key(inFile,key);
