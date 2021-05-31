@@ -11,7 +11,15 @@ Skip_List_mem::Skip_List_mem()
 }
 
 Skip_List_mem::~Skip_List_mem(){
+    SKNode_mem *cur = head->forward[0];
+    while(cur->key != LONG_LONG_MAX)
+    {
+        delete head;
+        head = cur;
+        cur = head->forward[0];
+    }
     delete head;
+    delete cur;
 }
 
 std::string Skip_List_mem::searchNode(const  long long &key){

@@ -10,11 +10,12 @@ CONFIG -= app_bundle
 SOURCES += \
     bloomfilter.cpp \
     kvstore.cc \
-    main.cc \
+    correctness.cc \
     memtable.cpp \
     skip_list.cpp \
     skip_list_mem.cpp \
-    sstable.cpp
+    sstable.cpp \
+    persistence.cc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

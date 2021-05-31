@@ -26,6 +26,9 @@ struct Dict{
 
 class SSTable
 {
+private:
+    const std::string dir;
+
 public:
     uint64_t file_id = 0;
     uint32_t file_level = 0;
@@ -41,7 +44,7 @@ public:
 
 public:
     SSTable();
-    SSTable(MemTable *m,uint64_t &_time,uint32_t level);
+    SSTable(MemTable *m,uint64_t &_time,uint32_t level,std::string &path);
     void reset();
     std::string search(long long key);
 };

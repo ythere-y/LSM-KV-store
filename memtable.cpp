@@ -4,6 +4,9 @@ const std::string D_str = "~DELETED~";
 MemTable::MemTable():memory_remaining(0),memory_usage(0),len(0){}
 MemTable::MemTable(uint32_t size):memory_remaining(size-32-10240),memory_usage(32+10240),len(0){}
 
+MemTable::~MemTable(){
+    delete sl;
+}
 int MemTable::insert(long long  key, const std::string &s){
     uint32_t length = s.size()+12;  //此次所需要的长度为字符串长度加上索引区长度12
     if (length >= memory_remaining)

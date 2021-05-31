@@ -22,13 +22,15 @@ private:
     const uint32_t mem_size =  2*1024*1024;
 //    const uint32_t mem_size = 2*1024*8;
 //    const uint32_t mem_size = 32+10240+40;
-    uint64_t time_stamp_label;
+    std::string dir = "";
+    uint64_t time_stamp_label = 0;      // 全局时间标签，总是标志着下一个table的time_stamp
     MemTable *mem;
     std::vector<Level*> levels;     //存储多个层级
     uint32_t cur_level = 0;         //记录目前层级数量
 
     uint32_t level_to_int(std::string level_name);
     uint32_t id_to_int(std::string id_name);
+    void dirname_to_num(std::string &dirname,std::string &filename,uint32_t &level, uint32_t &id);
 
 //    SSTable *ss;
     void recombination();
@@ -46,5 +48,5 @@ public:
 
 	void reset() override;
 
-    void init_SSTables(const std::string &dir);
+    void init_SSTables();
 };

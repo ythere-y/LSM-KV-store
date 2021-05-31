@@ -25,89 +25,75 @@ uint32_t KVStore::id_to_int(std::string id_name){
     return res;
 }
 
+void KVStore::dirname_to_num(std::string &dirname, std::string &filename, uint32_t &level, uint32_t &id)
+{
+    std::string str_level = "";
+    str_level = dirname.substr(6);
+    uint32_t len = filename.size();
+    std::string str_id = filename.substr(0,len-4);
+    level = std::atoi(str_level.c_str());
+    id = std::atoi(str_id.c_str());
+    printf("get level = %u, id = %u\n",level,id);
+}
+
+
 KVStore::KVStore(const std::string &dir): KVStoreAPI(dir)
 {
+    this->dir = dir;
     mem = new MemTable(mem_size);
     time_stamp_label = 0;
     levels.push_back(new Level);
-//    init_SSTables(dir);
+    init_SSTables();
 }
 
-void KVStore::init_SSTables(const std::string &dir){
+void KVStore::init_SSTables(){
     std::vector<std::string> dir_list;
+    std::string p;
     std::vector<std::string> file_list;
-    utils::scanDir("data",dir_list);
+    int count = 0;
+    utils::scanDir(dir.c_str(),dir_list);
     for (auto dir_p : dir_list)
     {
-        utils::scanDir(dir.c_str(),file_list);
+        utils::scanDir(p.assign(dir).append("/").append(dir_p),file_list);
         for (auto file_p : file_list)
         {
-            printf("init by the file [%s]\n",file_p.c_str());
+            uint32_t level = 0;
+            uint32_t time_stamp = 0;
+            dirname_to_num(dir_p,file_p,level,time_stamp);
+            std::ifstream inFile(p.assign(dir).append("/").append(dir_p).append("/").append(file_p),std::ios::binary|std::ios::in);
+            if (inFile)
+            {
+                SSTable * add = new SSTable;
+                add->read_from_file(inFile,level,time_stamp);
+                while (level > cur_level) {
+                    levels.push_back(new Level);
+                    cur_level ++;
+                }
+                if (add->head.time_stamp >= time_stamp_label){
+                    time_stamp_label = add->head.time_stamp+1;
+                }
+                levels[level]->heads_in_level.push_back(add);
+                count ++;
+            }else{
+                printf("fail to open file [%s]/[%s]\n",dir_p.c_str(),file_p.c_str());
+                fflush(stdout);
+            }
         }
     }
-/*
-//    long hFile = 0, in_hFile = 0;
-//    struct _finddata_t fileinfo, in_fileinfo;
-//    std::string p;
-//    std::string path = dir;
-//    std::string tmp_name;
-//    uint32_t level = 0;
-//    uint32_t id = 0;
-//    int count = 0;
-//    //遍历data下所有level目录
-//    if ((hFile = _findfirst(p.assign(path).append("/*").c_str(),&fileinfo))!=-1)
-//    {
-//        do{
-////            printf("%s\n",fileinfo.name);
-//            if ((fileinfo.attrib & _A_SUBDIR))
-//            {
-//                //找到真实的level目录
-//                if (strcmp(fileinfo.name,".")!= 0 && strcmp(fileinfo.name,"..")!= 0)
-//                {
-//                    level = level_to_int(fileinfo.name);
-
-//                    //进入单个level目录，进入下一层
-//                    std::string tmp_path = p.assign(path).append("/").append(fileinfo.name);
-//                    if ((in_hFile = _findfirst(p.assign(tmp_path).append("/*").c_str(),&in_fileinfo))!=1){
-//                        do{
-//                            //找到正真的.sst文件
-//                            if (strcmp(in_fileinfo.name,".")!= 0 && strcmp(in_fileinfo.name,"..")!=0)
-//                            {
-//                                //尝试打开文件，开始读取，读到的数据用来初始化一个add
-//                                id = id_to_int(in_fileinfo.name);
-//                                tmp_name = p.assign(tmp_path).append("/").append(in_fileinfo.name);
-//                                SSTable *add = new SSTable;
-//                                time_stamp_label = add->head.time_stamp > time_stamp_label ? add->head.time_stamp : time_stamp_label;
-//                                std::ifstream inFile(tmp_name,std::ios::in|std::ios::binary);
-//                                if (inFile){
-//                                    add->read_from_file(inFile,level,id);
-//                                    //如果没有对应的层级，则先准备好
-//                                    while (level>= levels.size())
-//                                        levels.push_back(new Level);
-//                                    levels[level]->heads_in_level.push_back(add);
-//                                    count ++;
-//                                }else
-//                                    printf("fail to open file %s\n",tmp_name.c_str());
-//                                inFile.close();
-//                                printf("read %s OK\n",tmp_name.c_str());
-//                            }
-//                            fflush(stdout);
-//                        }while(_findnext(in_hFile,&in_fileinfo)==0);
-//                    }
-//                }
-//            }
-//        }while(_findnext(hFile,&fileinfo)==0);
-//    }
-
-//    if (count)
-//        printf("success to read %d files to init SSTables\n",count);
-//    else
-//        printf("no files to read for initations\n");
-*/
+    printf("read %d file to init table\n",count);
 }
 
 KVStore::~KVStore()
 {
+    // 析构之前保存最后一个MEMTable
+    if (mem->len)
+    {
+        uint64_t next_time = time_stamp_label ++;
+        SSTable * add = new SSTable(mem,next_time,0,dir);
+        levels[0]->heads_in_level.push_back(add);
+        recombination();
+    }
+    delete mem;
 }
 
 /**
@@ -117,8 +103,8 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const std::string &s)
 {
     if (mem->insert(key,s)==-1){                //如果插入成功，则返回0，插入失败则返回-1，进入特殊处理
-        uint64_t next_time = time_stamp_label++;
-        SSTable * add = new SSTable(mem,next_time,0);  //根据MEMTable创建一个新的SSTabel 的level为0
+        uint64_t next_time = time_stamp_label++;    // 得到下一个的时间标签，同时全局时间标签+1维护
+        SSTable * add = new SSTable(mem,next_time,0,dir);  //根据MEMTable创建一个新的SSTabel 的level为0
         levels[0]->heads_in_level.push_back(add);       //把这个新的直接放到level_0里面
         recombination();
         mem->reset();                           //mem重置
@@ -143,16 +129,8 @@ std::string KVStore::get(uint64_t key)
     }
     else
     {
-//        if (key == 0)
-//            printf("********* in get section fail to find in mem\n");
-
-//        if (!levels[0]->heads_in_level.size())
-//            return "";
-//        if(key == 0)
-//            printf("********get there\n");
-        fflush(stdout);
         //再去遍历level
-        //level-0特殊处理，要考虑时间戳
+        /// level-0特殊处理，要考虑时间戳
         std::string tmp_res("");
 
         for (auto table:levels[0]->heads_in_level)
@@ -166,7 +144,7 @@ std::string KVStore::get(uint64_t key)
                 res = tmp_res;
             }
         }
-        //最后看res是否有数据，如果有，则直接返回
+        // 最后看res是否有数据，如果有，则直接返回
         if (strcmp(res.c_str(),"")) //如果不是空
         {
             if (!strcmp(res.c_str(),D_str.c_str())) //如果结果被删除
@@ -174,7 +152,7 @@ std::string KVStore::get(uint64_t key)
                 return "";
             }else return res;
         }
-
+        /// 遍历下层的所有SSTable
         for (auto level = levels.begin()+1; level!= levels.end(); level++)
         {
             //遍历level中的table
@@ -201,7 +179,6 @@ bool KVStore::del(uint64_t key)
     if (!strcmp(res_get.c_str(),""))   //如果查找结果为空，就直接返回失败
         return false;
     mem->remove(key);
-
     put(key,D_str);
     return true;
 }
@@ -270,7 +247,7 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
     {
         levels.push_back(new Level);    //加入新的一层
         cur_level ++;
-        last_level = 1;
+        last_level = 1;         // 最后一层标志为真
     }
     MemTable * com_mem = new MemTable(mem_size);
     std::vector<std::vector<Dict>::iterator> iter_list;
@@ -342,7 +319,7 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
 //            printf("create new sstable in compaction\n");
             time = time_stamp_label++;
             // 用time作为文件id，就可放到同一个level下
-            SSTable * add = new SSTable(com_mem,time,level+1);
+            SSTable * add = new SSTable(com_mem,time,level+1,dir);
             levels[level+1]->heads_in_level.push_back(add);
             com_mem->reset();
             com_mem->insert(key_min,tmp_val);
@@ -351,11 +328,11 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
         checkEnd();
         //最后所有下标从集合中删除，循环结束
     }
-    // 处理剩下的未满的一个MEMTable
+    /// 处理剩下的未满的一个MEMTable
     if (com_mem->len)
     {
         time = time_stamp_label++;
-        SSTable * last_one = new SSTable(com_mem,time,level+1);
+        SSTable * last_one = new SSTable(com_mem,time,level+1,dir);
         levels[level+1]->heads_in_level.push_back(last_one);
     }
     /** 至此，前面的合并完成，收拾残局 */
@@ -367,7 +344,7 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
     }
     delete com_mem;
 
-    // 准备下一层的迭代
+    /** 准备下一层的迭代 */
     int next_len = levels[level+1]->heads_in_level.size() - (1 << (level+2));   //计算下一层多出来的table的数量
     if (next_len <= 0)  //如果没有多出来的table，则不需要进行迭代
     {return;}
@@ -413,29 +390,6 @@ void KVStore::compaction(std::vector<SSTable *> &tar_list, const uint32_t level)
                 levels[level+1]->heads_in_level.erase(iter_list);
             }
         }
-//        for (auto table : levels[level+1]->heads_in_level)
-//        {
-//            table_map.insert(std::pair<uint64_t,SSTable*>(table->head.time_stamp,table));
-//        }
-//        // 从map中取前len个放到next list中
-//        long long next_tmp_min = LONG_LONG_MAX;
-//        long long next_tmp_max = LONG_LONG_MIN;
-//        std::map<uint64_t,SSTable*>::iterator iter_map = table_map.begin();
-//        for (int i = 0; i < len; i ++)
-//        {
-//            SSTable * cur = iter_map->second;
-//            next_tmp_min = cur->head.min < next_tmp_min ? cur->head.min : next_tmp_min;
-//            next_tmp_max = cur->head.max > next_tmp_max ? cur->head.max : next_tmp_max;
-//            next_table_list.push_back(cur);
-//            iter_map++;
-//            // 确定一个之后，将它从原来所处的level层删除
-//            for(std::vector<SSTable*>::iterator it = levels[level+1]->heads_in_level.begin(); it != levels[level+1]->heads_in_level.end(); it++){
-//                if (*it == cur)
-//                    levels[level+1]->heads_in_level.erase(it);
-//                break;
-//            }
-//        }
-
         // 调用递归
         compaction(next_table_list,level+1);
     }

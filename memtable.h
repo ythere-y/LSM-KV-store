@@ -19,7 +19,7 @@ public:
 public:
     MemTable();
     MemTable(uint32_t size);
-    ~MemTable(){}
+    ~MemTable();
     int insert(long long key, const std::string &s);
     std::string search(long long key);
     int remove(long long key);

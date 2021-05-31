@@ -8,9 +8,10 @@ SSTable::SSTable()
 /*
  * 用一个Memtable来初始化SSTable,需要记录的是header、布隆过滤器、索引区，stringdata不记录，直接写入文件
  */
-SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level)
+SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level, std::string &path):dir(path)
 {
 //    printf("get the args : time = %llu, level = %d, id = %d\n",_time,level,id);
+
     file_id = _time;
     file_level = level;
     head.time_stamp = _time;    //记录时间戳
@@ -58,15 +59,15 @@ SSTable::SSTable( MemTable * m,uint64_t &_time,uint32_t level)
     fflush(stdout);
 
 
-    sprintf(tmp_dir_buf,"data/level-%d",level);
-    sprintf(tmp_buf,"data/level-%d/%llu.sst",level,file_id);
+    sprintf(tmp_dir_buf,"%s/level-%d",dir.c_str(),level);
+    sprintf(tmp_buf,"%s/level-%d/%llu.sst",dir.c_str(),level,file_id);
 
     std::string filename(tmp_buf);
     std::string dirname(tmp_dir_buf);
     // 先检查文件目录是否存在，如果不存在就创建一个
-    if (access(dirname.c_str(),F_OK)!=0)
+    if (!utils::dirExists(dirname.c_str()))
     {
-        mkdir(dirname.c_str());
+        utils::mkdir(dirname.c_str());
     }
     std::ofstream outFile(filename,std::ios::out|std::ios::binary);
     write_to_file(outFile, str_data);
@@ -174,8 +175,13 @@ void SSTable::read_from_file(std::ifstream &file,const uint32_t level,const uint
     file.read((char*)&(buff),10240);
     memcpy(blfter.bitmap.bitmap, buff,10240);
     ///读索引区
-    file.read((char*)&(dict),head.nums*12);
-    fflush(stdout);
+    int len = head.nums;
+    dict = std::vector<Dict>(len);
+    for (int i = 0; i < len; i++)
+    {
+        file.read((char*)&(dict[i].key),8);
+        file.read((char*)&(dict[i].offset),4);
+    }
     return ;
 }
 /*
@@ -197,19 +203,6 @@ std::string SSTable::read_from_file_by_key(std::ifstream & inFile, const uint64_
     }else{                              //是第一个
         offset_start = 0;
     }
-//    if (key == 0){
-//        uint64_t num_test = 0;
-//        char test[4];
-//        memset(test,0,sizeof(char)*3);
-//        printf("in read secton the level = %d, id = %llu\n",file_level,file_id);
-//        printf("in read secton the start = %d, the end = %d\n",offset_start,offset_end);
-//        inFile.read((char*)&num_test,8);
-//        inFile.seekg(32+10240+head.nums*12);
-//        inFile.read(test,3);
-//        test[3] = '\0';
-//        printf("in read secton the test = %s\n",test);
-//        printf("in read section the num_test = %llu\n" ,num_test);
-//    }
     int gap = offset_end-offset_start;
     length = gap > 0 ? gap : 0;
     inFile.seekg(32+10240+head.nums*12+offset_start,std::ios::beg);//依次跳过header、布隆过滤器、索引，再加上偏移量
